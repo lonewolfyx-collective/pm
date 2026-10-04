@@ -1,0 +1,7 @@
+{
+  "extends": [
+    "@lonewolfyx/tsconfig/tsconfig.json",
+    "@lonewolfyx/tsconfig/node.json"
+  ],
+  "compilerOptions": {}
+}
