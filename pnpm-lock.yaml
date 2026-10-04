@@ -17,6 +17,9 @@ importers:
       glob:
         specifier: ^13.0.6
         version: 13.0.6
+      package-manager-detector:
+        specifier: ^1.8.0
+        version: 1.8.0
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^9.5.1

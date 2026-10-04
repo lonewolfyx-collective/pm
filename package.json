@@ -41,7 +41,8 @@
   "dependencies": {
     "citty": "^0.2.2",
     "find-up": "^8.0.0",
-    "glob": "^13.0.6"
+    "glob": "^13.0.6",
+    "package-manager-detector": "^1.8.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.5.1",
