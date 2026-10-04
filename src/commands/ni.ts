@@ -1,13 +1,6 @@
-import { createMain, defineCommand } from 'citty'
+import { definePackageManageCommand } from '../run.ts'
 
-const main = defineCommand({
-  meta: {
-    name: 'install',
-    description: '',
-  },
-  run() {
-    console.log(213)
-  },
+void definePackageManageCommand('ni', async (config, ctx) => {
+  console.log(ctx, config)
+  console.log(123)
 })
-
-createMain(main)()
