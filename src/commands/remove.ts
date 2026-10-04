@@ -1,13 +1,6 @@
-import { createMain, defineCommand } from 'citty'
+import { runCommand } from '../run.ts'
 
-const main = defineCommand({
-  meta: {
-    name: 'remove',
-    description: '',
-  },
-  run() {
-    console.log(213)
-  },
+void runCommand('remove', async (config, ctx) => {
+  console.log(ctx, config)
+  console.log(123)
 })
-
-createMain(main)()
