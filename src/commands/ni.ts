@@ -1,6 +1,6 @@
-import { definePackageManageCommand } from '../run.ts'
+import { runCommand } from '../run.ts'
 
-void definePackageManageCommand('ni', async (config, ctx) => {
+void runCommand('ni', async (config, ctx) => {
   console.log(ctx, config)
   console.log(123)
 })
