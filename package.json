@@ -16,16 +16,20 @@
   "keywords": [],
   "exports": {
     "./build": "./dist/build.mjs",
+    "./clearn": "./dist/clearn.mjs",
+    "./dev": "./dist/dev.mjs",
+    "./init": "./dist/init.mjs",
     "./install": "./dist/install.mjs",
+    "./remove": "./dist/remove.mjs",
     "./package.json": "./package.json"
   },
   "bin": {
-    "install": "./bin/install.mjs",
+    "ni": "./bin/ni.mjs",
     "remove": "./bin/remove.mjs",
     "dev": "./bin/dev.mjs",
     "build": "./bin/build.mjs",
-    "test": "./bin/test.mjs",
-    "clearn": "./bin/clearn.mjs"
+    "clearn": "./bin/clearn.mjs",
+    "init": "./bin/clearn.mjs"
   },
   "scripts": {
     "build": "tsdown",
