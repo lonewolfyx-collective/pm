@@ -1,6 +1,7 @@
 import type { ArgsDef } from 'citty'
 import type { CommandArgs, CommandHandler, commandMeta, commandOrMeta, PackageManageCommandParameters } from './types.ts'
 import { defineCommand, runMain } from 'citty'
+import { version } from '../package.json' with { type: 'json' }
 import { defaultArgs } from './args/default.ts'
 import { resolveConfig } from './config.ts'
 
@@ -20,7 +21,10 @@ export async function runCommand(...args: Parameters<typeof runCommand>): Promis
   const handler = (args.length === 2 ? args[1] : args[2]) as CommandHandler<ArgsDef>
 
   const main = defineCommand<CommandArgs<ArgsDef>>({
-    meta,
+    meta: {
+      ...meta,
+      version,
+    },
     args: commandArgs,
     async run(ctx) {
       const config = await resolveConfig<ArgsDef>(ctx.args)
