@@ -7,4 +7,4 @@ export const defaultArgs = {
     alias: 'c',
     default: process.cwd(),
   },
-} satisfies ArgsDef
+} as const satisfies ArgsDef

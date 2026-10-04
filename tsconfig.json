@@ -3,5 +3,10 @@
     "@lonewolfyx/tsconfig/tsconfig.json",
     "@lonewolfyx/tsconfig/node.json"
   ],
-  "compilerOptions": {}
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0"
+  },
+  "include": [
+    "src/**/*"
+  ]
 }
