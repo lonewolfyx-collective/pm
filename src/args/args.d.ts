@@ -1,4 +1,4 @@
-import type { ParsedArgs } from 'citty'
-import type { defaultArgs } from './default.ts'
+import type { ArgsDef, ParsedArgs } from 'citty'
+import type { CommandArgs } from '../types.ts'
 
-export type OptionsArgs = ParsedArgs<typeof defaultArgs>
+export type OptionsArgs<T extends ArgsDef = CommandArgs> = ParsedArgs<CommandArgs<T>>
