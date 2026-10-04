@@ -19,7 +19,7 @@
     "./clearn": "./dist/clearn.mjs",
     "./dev": "./dist/dev.mjs",
     "./init": "./dist/init.mjs",
-    "./install": "./dist/install.mjs",
+    "./ni": "./dist/ni.mjs",
     "./remove": "./dist/remove.mjs",
     "./package.json": "./package.json"
   },
