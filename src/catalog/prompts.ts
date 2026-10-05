@@ -131,6 +131,7 @@ export async function selectCatalog(
 export async function selectDependencies(message: string, packages: string[]): Promise<string[] | typeof CANCEL_SYMBOL> {
   return await new MultiSelectPrompt({
     options: packages.map(pkg => ({ value: pkg, label: pkg })),
+    initialValues: packages.length === 1 ? packages : [],
     required: true,
     validate(value): string | undefined {
       if (!value?.length) {
