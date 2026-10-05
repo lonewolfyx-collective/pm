@@ -1,12 +1,12 @@
 import type { ArgsDef } from 'citty'
 import type {
-  command,
   CommandArgs,
   CommandHandler,
   commandMeta,
   commandOrMeta,
   PackageManageCommandParameters,
   ResolveConfig,
+  ResolvedCommand,
 } from './types.ts'
 import { defineCommand, runMain } from 'citty'
 import { x } from 'tinyexec'
@@ -46,7 +46,7 @@ export function runCommand(...args: Parameters<typeof runCommand>): void {
   })
 }
 
-export async function executeCommand(command: command, config: ResolveConfig): Promise<void> {
+export async function executeCommand(command: ResolvedCommand, config: ResolveConfig): Promise<void> {
   const proc = x(
     command.command,
     command.args,
