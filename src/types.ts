@@ -6,6 +6,14 @@ export interface ResolveConfig {
   cwd: string
   detect: DetectResult
   packages: string[]
+  monorepo: {
+    status: boolean
+    packages: string[]
+    package: {
+      name: string
+      file: string
+    }[]
+  }
 }
 
 export type commandMeta = Required<Pick<CommandMetaData, 'name' | 'description'>>
