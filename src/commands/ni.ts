@@ -1,28 +1,15 @@
-import { cancel, isCancel } from '@clack/prompts'
+import { cancel, isCancel, log } from '@clack/prompts'
 import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
+import { catalogOptions } from '../catalog.ts'
 import { highlightCatalog, selectCatalog, selectDependencies } from '../prompts/catalog.ts'
 import { executeCommand, runCommand } from '../run.ts'
-
-// https://antfu.me/posts/categorize-deps
-const catalogOptions = [
-  { value: 'test', label: 'test', hint: 'Testing' },
-  { value: 'lint', label: 'lint', hint: 'Linting and formatting' },
-  { value: 'build', label: 'build', hint: 'Building the project' },
-  { value: 'script', label: 'script', hint: 'Scripting tasks' },
-  { value: 'frontend', label: 'frontend', hint: 'Frontend development' },
-  { value: 'backend', label: 'backend', hint: 'Backend server' },
-  { value: 'types', label: 'types', hint: 'Type checking and definitions' },
-  { value: 'inlined', label: 'inlined', hint: 'Dependencies included in the bundle' },
-  { value: 'prod', label: 'prod', hint: 'Production runtime dependencies' },
-  { value: 'dev', label: 'dev', hint: 'Runtime development dependencies.' },
-  { value: 'config', label: 'config', hint: 'Packages for configuration.' },
-]
+import { resolveCatalogName } from '../utils.ts'
 
 runCommand('ni', {
   catalog: {
     type: 'boolean',
-    description: 'Interactively assign packages to named catalogs (pnpm only)',
+    description: 'Assign packages to catalogs using built-in rules and interactive selection (pnpm only)',
     default: false,
   },
   catalogName: {
@@ -60,7 +47,21 @@ runCommand('ni', {
   const groups = new Map<string, string[]>()
 
   if (catalog) {
-    let remainingPackages = [...config.packages]
+    let remainingPackages: string[] = []
+
+    for (const pkg of config.packages) {
+      const name = resolveCatalogName(pkg)
+      if (name) {
+        groups.set(name, [...(groups.get(name) ?? []), pkg])
+      }
+      else {
+        remainingPackages.push(pkg)
+      }
+    }
+
+    for (const [name, packages] of groups) {
+      log.info(`Automatically assigned ${cyan.bold(packages.join(', '))} to ${highlightCatalog(`catalog:${name}`)}`)
+    }
 
     while (remainingPackages.length) {
       const name = await selectCatalog(

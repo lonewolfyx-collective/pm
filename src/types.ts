@@ -29,3 +29,11 @@ export interface ResolvedCommand {
   command: string
   args: string[]
 }
+
+export interface CatalogOption {
+  value: string
+  label: string
+  hint: string
+  // Exact package names or prefixes ending in *, e.g. @eslint/*.
+  packages?: string[]
+}
