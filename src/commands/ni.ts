@@ -9,7 +9,7 @@ import { executeCommand, runCommand } from '../run.ts'
 runCommand('ni', {
   catalog: {
     type: 'boolean',
-    description: 'Assign packages to catalogs using built-in rules and interactive selection (pnpm only)',
+    description: 'Assign packages to built-in or custom catalogs using rules and interactive selection (pnpm only)',
     default: false,
   },
   catalogName: {
@@ -47,6 +47,7 @@ runCommand('ni', {
   const groups = new Map<string, string[]>()
 
   if (catalog) {
+    const options = [...catalogOptions]
     let remainingPackages: string[] = []
 
     for (const pkg of config.packages) {
@@ -66,7 +67,7 @@ runCommand('ni', {
     while (remainingPackages.length) {
       const name = await selectCatalog(
         `Select a catalog name (remaining dependencies: ${cyan.bold(remainingPackages.join(', '))})`,
-        catalogOptions,
+        options,
       )
 
       if (isCancel(name)) {
@@ -87,6 +88,9 @@ runCommand('ni', {
       }
 
       groups.set(name, [...(groups.get(name) ?? []), ...packages])
+      if (!options.some(option => option.value === name)) {
+        options.push({ value: name, label: name, hint: 'Custom catalog' })
+      }
       const selectedPackages = new Set(packages)
       remainingPackages = remainingPackages.filter(pkg => !selectedPackages.has(pkg))
     }

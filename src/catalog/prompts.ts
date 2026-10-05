@@ -13,11 +13,12 @@ import {
   SELECT_INSTRUCTIONS,
   symbol,
   symbolBar,
+  text,
 } from '@clack/prompts'
 import { cyan, dim, gray, green, hex, strikethrough, yellow } from 'ansis'
 
 interface SelectionOption {
-  value: string
+  value: string | symbol
   label: string
   hint?: string
 }
@@ -26,7 +27,7 @@ interface SelectionState {
   state: State
   options: SelectionOption[]
   cursor: number
-  value: string | string[] | undefined
+  value: string | symbol | (string | symbol)[] | undefined
   error: string
 }
 
@@ -50,7 +51,9 @@ function renderSelection(
   if (prompt.state === 'submit' || prompt.state === 'cancel') {
     const selected = prompt.options
       .filter(option => values.includes(option.value))
-      .map(option => prompt.state === 'submit' ? highlight(option.label) : dim(strikethrough(option.label)))
+      .map(option => prompt.state === 'submit'
+        ? highlight(option.label)
+        : dim(strikethrough(option.label)))
       .join(', ')
     const result = wrapTextWithPrefix(process.stdout, selected, guide ? `${gray(S_BAR)}  ` : '')
     return `${header}${result}${prompt.state === 'cancel' && guide ? `\n${gray(S_BAR)}` : ''}`
@@ -86,13 +89,43 @@ function renderSelection(
   return `${header}${prefix}${options.join(`\n${prefix}`)}\n${error}${footer.join('\n')}\n`
 }
 
-export async function selectCatalog(message: string, options: SelectionOption[]): Promise<string | typeof CANCEL_SYMBOL> {
-  return await new SelectPrompt({
-    options,
+export async function selectCatalog(
+  message: string,
+  options: SelectionOption[],
+): Promise<string | typeof CANCEL_SYMBOL> {
+  const customCatalog = Symbol('custom-catalog')
+  const selected = await new SelectPrompt({
+    options: [
+      ...options,
+      {
+        value: customCatalog,
+        label: 'Custom catalog',
+        hint: 'Enter a catalog name',
+      },
+    ],
     render(): string {
       return renderSelection(this, message, false, highlightCatalog)
     },
   }).prompt() ?? CANCEL_SYMBOL
+
+  if (selected !== customCatalog) {
+    return typeof selected === 'string' ? selected : CANCEL_SYMBOL
+  }
+
+  const name = await text({
+    message: 'Enter a custom catalog name (letters and digits only)',
+    placeholder: 'shared',
+    validate(value) {
+      if (!value?.trim()) {
+        return 'Please enter a catalog name.'
+      }
+      if (!/^[a-z0-9]+$/i.test(value.trim())) {
+        return 'Catalog names can only contain English letters (A-Z, a-z) and digits (0-9).'
+      }
+    },
+  })
+
+  return typeof name === 'string' ? name.trim() : CANCEL_SYMBOL
 }
 
 export async function selectDependencies(message: string, packages: string[]): Promise<string[] | typeof CANCEL_SYMBOL> {
