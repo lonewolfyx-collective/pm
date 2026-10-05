@@ -24,9 +24,11 @@ runCommand('ni', async (config, ctx) => {
     )
   }
 
+  const command = config.packages.length ? 'add' : 'install'
+
   console.log(resolveCommand(
     config.detect.agent,
-    'install',
+    command,
     args,
   ))
 })
