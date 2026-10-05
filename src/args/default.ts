@@ -28,6 +28,6 @@ export const defaultArgs = {
     type: 'string',
     description: 'Specify the catalog name',
     alias: 'n',
-    default: 'catalog',
+    default: '',
   },
 } as const satisfies ArgsDef
