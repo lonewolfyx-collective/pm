@@ -15,6 +15,8 @@ const catalogOptions = [
   { value: 'types', label: 'types', hint: 'Type checking and definitions' },
   { value: 'inlined', label: 'inlined', hint: 'Dependencies included in the bundle' },
   { value: 'prod', label: 'prod', hint: 'Production runtime dependencies' },
+  { value: 'dev', label: 'dev', hint: 'Runtime development dependencies.' },
+  { value: 'config', label: 'config', hint: 'Packages for configuration.' },
 ]
 
 runCommand('ni', {
