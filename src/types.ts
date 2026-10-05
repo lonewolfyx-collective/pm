@@ -5,6 +5,7 @@ import type { defaultArgs } from './args/default.ts'
 export interface ResolveConfig {
   cwd: string
   detect: DetectResult
+  packages: string[]
 }
 
 export type commandMeta = Required<Pick<CommandMetaData, 'name' | 'description'>>
