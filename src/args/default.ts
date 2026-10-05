@@ -24,10 +24,4 @@ export const defaultArgs = {
     alias: ['o', 'O'],
     default: false,
   },
-  catalogName: {
-    type: 'string',
-    description: 'Specify the catalog name',
-    alias: '',
-    default: '',
-  },
 } as const satisfies ArgsDef
