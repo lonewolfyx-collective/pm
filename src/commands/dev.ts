@@ -1,6 +1,4 @@
+import { runPackageScript } from '../package.ts'
 import { runCommand } from '../run.ts'
 
-runCommand('dev', async (config, ctx) => {
-  console.log(ctx, config)
-  console.log(123)
-})
+runCommand('dev', async config => await runPackageScript('dev', config))
