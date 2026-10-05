@@ -1,5 +1,7 @@
-import { cancel, isCancel, multiselect, select } from '@clack/prompts'
+import { cancel, isCancel } from '@clack/prompts'
+import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
+import { highlightCatalog, selectCatalog, selectDependencies } from '../prompts/catalog.ts'
 import { executeCommand, runCommand } from '../run.ts'
 
 // https://antfu.me/posts/categorize-deps
@@ -59,10 +61,10 @@ runCommand('ni', {
     let remainingPackages = [...config.packages]
 
     while (remainingPackages.length) {
-      const name = await select({
-        message: 'Select a catalog name',
-        options: catalogOptions,
-      })
+      const name = await selectCatalog(
+        `Select a catalog name (remaining dependencies: ${cyan.bold(remainingPackages.join(', '))})`,
+        catalogOptions,
+      )
 
       if (isCancel(name)) {
         cancel('Installation cancelled.')
@@ -70,11 +72,10 @@ runCommand('ni', {
         return
       }
 
-      const packages = await multiselect({
-        message: `Select dependencies for catalog:${name}`,
-        options: remainingPackages.map(pkg => ({ value: pkg, label: pkg })),
-        required: true,
-      })
+      const packages = await selectDependencies(
+        `Select dependencies for ${highlightCatalog(`catalog:${name}`)}`,
+        remainingPackages,
+      )
 
       if (isCancel(packages)) {
         cancel('Installation cancelled.')
