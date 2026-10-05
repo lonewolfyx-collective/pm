@@ -16,7 +16,7 @@ export interface ResolveConfig {
     package: {
       name: string
       file: string
-      info: PackageJson
+      info: Required<Pick<PackageJson, 'dependencies' | 'devDependencies'>>
     }[]
   }
 }

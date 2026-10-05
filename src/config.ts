@@ -72,7 +72,14 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
 
   monorepo.package = await Promise.all([...new Set(files)].sort().map(async (file) => {
     const pkg = await readPackageJSON(file)
-    return { name: pkg.name!, file, info: pkg }
+    return {
+      name: pkg.name!,
+      file,
+      info: {
+        dependencies: pkg.dependencies ?? {},
+        devDependencies: pkg.devDependencies ?? {},
+      },
+    }
   }))
 
   return monorepo
