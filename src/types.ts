@@ -1,5 +1,6 @@
 import type { ArgsDef, CommandContext, CommandMeta as CommandMetaData } from 'citty'
 import type { DetectResult } from 'package-manager-detector'
+import type { PackageJson } from 'pkg-types'
 import type { defaultArgs } from './args/default.ts'
 
 export interface ResolveConfig {
@@ -15,6 +16,7 @@ export interface ResolveConfig {
     package: {
       name: string
       file: string
+      info: PackageJson
     }[]
   }
 }
