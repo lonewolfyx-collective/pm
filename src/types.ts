@@ -8,7 +8,10 @@ export interface ResolveConfig {
   packages: string[]
   monorepo: {
     status: boolean
-    packages: string[]
+    packages: {
+      label: string
+      path: string
+    }[]
     package: {
       name: string
       file: string

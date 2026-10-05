@@ -2,9 +2,9 @@ import type { ArgsDef } from 'citty'
 import type { OptionsArgs } from './args/args'
 import type { CommandArgs, ResolveConfig } from './types.ts'
 import { readFile } from 'node:fs/promises'
-import { dirname, posix } from 'node:path'
+import { dirname, isAbsolute, posix, relative, resolve, sep } from 'node:path'
 import { findUp } from 'find-up'
-import { glob } from 'glob'
+import { glob, hasMagic } from 'glob'
 import { detect } from 'package-manager-detector'
 import { readPackageJSON } from 'pkg-types'
 import { parse } from 'yaml'
@@ -29,17 +29,46 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
   }
 
   monorepo.status = true
-  monorepo.packages = patterns
 
-  const includes = patterns.filter(pattern => !pattern.startsWith('!'))
-  const excludes = patterns.filter(pattern => pattern.startsWith('!')).map(pattern => pattern.slice(1))
-  const files = await glob(includes.map(pattern => posix.join(pattern, 'package.json')), {
-    cwd: dirname(workspaceFile),
-    absolute: true,
-    nodir: true,
-    dot: true,
-    ignore: ['**/node_modules/**', '**/.git/**', ...excludes.flatMap(pattern => [pattern, posix.join(pattern, '**')])],
-  })
+  const includes = patterns.filter(pattern => !pattern.startsWith('!')).map(pattern => posix.normalize(pattern))
+  const excludes = patterns.filter(pattern => pattern.startsWith('!')).map(pattern => posix.normalize(pattern.slice(1)))
+  const ignore = ['**/node_modules/**', '**/.git/**', ...excludes.flatMap(pattern => [pattern, posix.join(pattern, '**')])]
+  const workspaceRoot = dirname(workspaceFile)
+
+  const matches = await Promise.all(includes.map(async (pattern) => {
+    const files = await glob(posix.join(pattern, 'package.json'), {
+      cwd: workspaceRoot,
+      absolute: true,
+      nodir: true,
+      ignore,
+    })
+    const segments = pattern.split('/')
+    const wildcardIndex = segments.findIndex(segment => hasMagic(segment, { magicalBraces: true }))
+    return {
+      files,
+      label: wildcardIndex === -1 ? undefined : segments.slice(0, wildcardIndex).join('/') || '.',
+    }
+  }))
+  const groups = new Map<string, ResolveConfig['monorepo']['packages'][number]>()
+
+  for (const { label, files } of matches) {
+    if (label === undefined) {
+      continue
+    }
+
+    const path = resolve(workspaceRoot, label)
+    const hasChildPackage = files.some((file) => {
+      const childPath = relative(path, dirname(file))
+      return childPath !== '' && childPath !== '..' && !childPath.startsWith(`..${sep}`) && !isAbsolute(childPath)
+    })
+
+    if (hasChildPackage && !groups.has(path)) {
+      groups.set(path, { label: label === '.' ? 'root' : label, path })
+    }
+  }
+
+  monorepo.packages = [...groups.values()]
+  const files = matches.flatMap(match => match.files)
 
   monorepo.package = await Promise.all([...new Set(files)].sort().map(async (file) => {
     const pkg = await readPackageJSON(file)
