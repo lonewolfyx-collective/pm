@@ -39,6 +39,8 @@
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
+    "@clack/core": "^1.5.1",
+    "@clack/prompts": "^1.8.1",
     "citty": "^0.2.2",
     "find-up": "^8.0.0",
     "glob": "^13.0.6",
