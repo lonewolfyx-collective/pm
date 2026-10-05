@@ -1,10 +1,7 @@
 import { resolveCommand } from 'package-manager-detector'
-import { runCommand } from '../run.ts'
+import { executeCommand, runCommand } from '../run.ts'
 
 runCommand('ni', async (config, ctx) => {
-  console.log(ctx, config)
-  console.log(123)
-
   const args = [...config.packages]
 
   if (ctx.args.devDependencies) {
@@ -26,9 +23,11 @@ runCommand('ni', async (config, ctx) => {
 
   const command = config.packages.length ? 'add' : 'install'
 
-  console.log(resolveCommand(
+  const resolvedCommand = resolveCommand(
     config.detect.agent,
     command,
     args,
-  ))
+  )!
+
+  await executeCommand(resolvedCommand, config)
 })
