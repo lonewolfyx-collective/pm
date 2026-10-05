@@ -1,4 +1,4 @@
-import { catalogOptions } from './catalog.ts'
+import { catalogOptions } from './rules.ts'
 
 export function resolveCatalogName(packageSpecifier: string): string | undefined {
   // Match registry names (including versions and npm aliases), leaving other sources for manual assignment.

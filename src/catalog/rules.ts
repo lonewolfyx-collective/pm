@@ -1,4 +1,4 @@
-import type { CatalogOption } from './types.ts'
+import type { CatalogOption } from '../types.ts'
 
 // https://antfu.me/posts/categorize-deps
 export const catalogOptions: CatalogOption[] = [
