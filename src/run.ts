@@ -1,6 +1,15 @@
 import type { ArgsDef } from 'citty'
-import type { CommandArgs, CommandHandler, commandMeta, commandOrMeta, PackageManageCommandParameters } from './types.ts'
+import type {
+  command,
+  CommandArgs,
+  CommandHandler,
+  commandMeta,
+  commandOrMeta,
+  PackageManageCommandParameters,
+  ResolveConfig,
+} from './types.ts'
 import { defineCommand, runMain } from 'citty'
+import { x } from 'tinyexec'
 import { version } from '../package.json' with { type: 'json' }
 import { defaultArgs } from './args/default.ts'
 import { resolveConfig } from './config.ts'
@@ -35,4 +44,27 @@ export function runCommand(...args: Parameters<typeof runCommand>): void {
 
     await runMain(main)
   })
+}
+
+export async function executeCommand(command: command, config: ResolveConfig): Promise<void> {
+  const proc = x(
+    command.command,
+    command.args,
+    {
+      nodeOptions: {
+        stdio: 'inherit',
+        cwd: config.cwd,
+      },
+      nodePath: false,
+      throwOnError: true,
+    },
+  )
+
+  process.once('SIGINT', async () => {
+    // Ensure the proc finishes cleanup before exiting
+    await proc
+    process.exit(proc.exitCode)
+  })
+
+  await proc
 }

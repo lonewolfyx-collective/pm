@@ -24,3 +24,8 @@ export type commandOrMeta = string | commandMeta
 export type PackageManageCommandParameters<T extends ArgsDef = ArgsDef>
   = | [commandOrMeta: commandOrMeta, fn: CommandHandler]
     | [commandOrMeta: commandOrMeta, args: T, fn: CommandHandler<T>]
+
+export interface command {
+  command: string
+  args: string[]
+}
