@@ -59,6 +59,25 @@ runCommand('init', {
       return
     }
 
+    if (!ctx.args.package.trim()) {
+      const name = await text({
+        message: 'Enter the package name',
+        validate(value) {
+          if (!value?.trim()) {
+            return 'Please enter a package name.'
+          }
+        },
+      })
+
+      if (isCancel(name)) {
+        cancel('Initialization cancelled.')
+        process.exitCode = 1
+        return
+      }
+
+      ctx.args = { ...ctx.args, package: name.trim() }
+    }
+
     if (!workspaceFile) {
       workspaceFile = resolve(config.cwd, 'pnpm-workspace.yaml')
       await writeFile(workspaceFile, '', 'utf-8')
