@@ -1,6 +1,7 @@
 import type { ResolveConfig } from '../types.ts'
 import { readFile, writeFile } from 'node:fs/promises'
 import { cancel, isCancel, multiselect } from '@clack/prompts'
+import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { isMap, parseDocument } from 'yaml'
@@ -162,7 +163,7 @@ runCommand('remove', async (config) => {
     const selected = candidates.length === 1
       ? candidates
       : await multiselect({
-          message: `Select projects to remove "${pkg}" from`,
+          message: `Select projects to remove "${cyan(pkg)}" from`,
           options: candidates.map((project) => {
             const fields = dependencyFields.filter(field => Object.hasOwn(project.info[field], pkg))
 
