@@ -94,6 +94,8 @@ runCommand('init', {
         workspaceConfig.packages = [...packages, pattern]
       }
     }
+
+    return
   }
 
   console.log(123)
