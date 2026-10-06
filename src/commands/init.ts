@@ -46,7 +46,7 @@ runCommand('init', {
             if (!name) {
               return 'Please enter a workspace folder name.'
             }
-            if (name === '.' || name === '..' || name.includes('/') || name.includes('\\')) {
+            if (['.', '..'].includes(name) || name.includes('/') || name.includes('\\')) {
               return 'Please enter a folder name without path separators.'
             }
           },
