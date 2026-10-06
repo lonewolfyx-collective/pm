@@ -4,6 +4,11 @@ import { cancel, confirm, isCancel, log, select, text } from '@clack/prompts'
 import { runCommand } from '../run.ts'
 
 runCommand('init', {
+  package: {
+    type: 'positional',
+    description: 'package name',
+    default: '',
+  },
   monorepo: {
     type: 'boolean',
     description: 'Select a monorepo workspace to create a project',
