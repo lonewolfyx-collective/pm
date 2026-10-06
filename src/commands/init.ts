@@ -40,6 +40,7 @@ runCommand('init', {
       : await text({
           message: 'Enter the workspace folder name',
           placeholder: 'packages',
+          initialValue: 'packages',
           validate(value) {
             const name = value?.trim()
             if (!name) {
