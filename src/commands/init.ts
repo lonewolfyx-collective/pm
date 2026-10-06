@@ -1,28 +1,50 @@
-import { writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
-import { cancel, isCancel, log, select } from '@clack/prompts'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { cancel, confirm, isCancel, log, select, text } from '@clack/prompts'
 import { runCommand } from '../run.ts'
 
 runCommand('init', {
   monorepo: {
     type: 'boolean',
-    description: 'Select a monorepo workspace to initialize readme.md',
+    description: 'Select a monorepo workspace to create a project',
     default: false,
   },
 }, async (config, ctx) => {
   let cwd = config.cwd
 
   if (ctx.args.monorepo) {
-    const { workspace } = config.monorepo
+    const { workspace, file: workspaceFile } = config.monorepo
 
     if (!workspace.length) {
-      throw new Error('No monorepo workspaces are available to initialize.')
+      const create = await confirm({
+        message: 'No monorepo workspaces found. Create a workspace?',
+      })
+
+      if (isCancel(create) || !create) {
+        cancel('Initialization cancelled.')
+        process.exitCode = 1
+        return
+      }
     }
 
-    const selected = await select({
-      message: 'Select a workspace to initialize',
-      options: workspace.map(({ label, path }) => ({ value: path, label })),
-    })
+    const selected = workspace.length
+      ? await select({
+          message: 'Select a monorepo workspace to create a project',
+          options: workspace.map(({ label, path }) => ({ value: path, label })),
+        })
+      : await text({
+          message: 'Enter the workspace folder name',
+          placeholder: 'packages',
+          validate(value) {
+            const name = value?.trim()
+            if (!name) {
+              return 'Please enter a workspace folder name.'
+            }
+            if (name === '.' || name === '..' || name.includes('/') || name.includes('\\')) {
+              return 'Please enter a folder name without path separators.'
+            }
+          },
+        })
 
     if (isCancel(selected)) {
       cancel('Initialization cancelled.')
@@ -30,7 +52,13 @@ runCommand('init', {
       return
     }
 
-    cwd = selected
+    cwd = workspace.length
+      ? selected
+      : resolve(workspaceFile ? dirname(workspaceFile) : config.cwd, selected.trim())
+
+    if (!workspace.length) {
+      await mkdir(cwd, { recursive: true })
+    }
   }
 
   const file = resolve(cwd, 'readme.md')
