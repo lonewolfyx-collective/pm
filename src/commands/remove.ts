@@ -1,6 +1,5 @@
 import type { ResolveConfig } from '../types.ts'
 import { readFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
 import { cancel, isCancel, multiselect } from '@clack/prompts'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
@@ -103,10 +102,7 @@ runCommand('remove', async (config) => {
   if (monorepo && !workspaceFile) {
     throw new Error('Could not find pnpm-workspace.yaml for the monorepo.')
   }
-  const rootFile = monorepo
-    ? join(dirname(workspaceFile), 'package.json')
-    : await resolvePackageJSON(config.cwd)
-  const cwd = dirname(rootFile)
+  const rootFile = await resolvePackageJSON(config.cwd)
   const selections = new Map<Project, string[]>()
   let rootProject: Project | undefined
 
@@ -137,13 +133,13 @@ runCommand('remove', async (config) => {
     if (!candidates.length) {
       throw new Error(`Dependency "${pkg}" was not found in the project.`)
     }
+
     // for (const project of candidates) {
     //   if (monorepo && project.file !== rootFile && !project.name) {
     //     throw new Error(`Cannot filter workspace project without a package name: ${project.file}`)
     //   }
     // }
 
-    console.log('candidates', pkg, candidates)
     const selected = candidates.length === 1
       ? candidates
       : await multiselect({
@@ -182,8 +178,6 @@ runCommand('remove', async (config) => {
     }
   }
 
-  console.log('selections', selections)
-
   const catalogs = new Map<string, Set<string>>()
   for (const [project, packages] of selections) {
     const groups = new Map<string, string[]>()
@@ -212,8 +206,8 @@ runCommand('remove', async (config) => {
         args.push(...(project.file === rootFile ? ['-w'] : ['-F', project.name]))
       }
       const command = resolveCommand(config.detect?.agent ?? 'npm', 'uninstall', args)!
-      console.log({ ...command, cwd })
-      // await executeCommand(command, { ...config, cwd })
+      console.log(command)
+      // await executeCommand(command, config)
     }
   }
 
