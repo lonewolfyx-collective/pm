@@ -150,11 +150,16 @@ runCommand('remove', async (config) => {
             const declarations = fields.map((field) => {
               const specifier = project.info[field][pkg]
               const name = catalogName(specifier)
-              // TODO 不理解的逻辑
-              const version = name === 'default'
+
+              // | 依赖声明 | 查找位置 |
+              // |---|---|
+              // | `catalog:` 或 `catalog:default` | 优先 `workspaceConfig.catalog[pkg]`，没有时查 `catalogs.default[pkg]` |
+              // | `catalog:react18` | `workspaceConfig.catalogs.react18[pkg]` |
+              // | 普通版本，如 `^18.2.0` | 不再查 catalog，返回 `undefined` |
+              const catalogVersionRange = name === 'default'
                 ? workspaceConfig.catalog?.[pkg] ?? workspaceConfig.catalogs?.default?.[pkg]
                 : name === undefined ? undefined : workspaceConfig.catalogs?.[name]?.[pkg]
-              return `${field}: ${specifier}${version ? ` (${version})` : ''}`
+              return `${field}: ${specifier}${catalogVersionRange ? ` (${catalogVersionRange})` : ''}`
             })
 
             return {
