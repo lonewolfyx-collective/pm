@@ -1,6 +1,7 @@
-import { readdir, rm } from 'node:fs/promises'
-import { join, relative, resolve, sep } from 'node:path'
+import { rm } from 'node:fs/promises'
+import { relative, resolve } from 'node:path'
 import { log } from '@clack/prompts'
+import { glob } from 'glob'
 import { LOCKS } from 'package-manager-detector'
 import { lock } from '../args/clearn.ts'
 import { runCommand } from '../run.ts'
@@ -41,35 +42,24 @@ runCommand('clearn', lock, async (config, ctx) => {
         .filter(([file, name]) => name === manager && !file.endsWith('-workspace.yaml'))
         .map(([file]) => file)
     : [])
-  const directories = [cwd]
-  const targets: string[] = []
-
-  while (directories.length) {
-    const directory = directories.pop()!
-    const entries = await readdir(directory, { withFileTypes: true })
-
-    for (const entry of entries) {
-      if (entry.name === '.git' || entry.isSymbolicLink()) {
-        continue
-      }
-
-      const path = join(directory, entry.name)
-      const projectPath = relative(cwd, path).split(sep).join('/')
-      const ignored = ignoredDirectories.some(pattern => projectPath === pattern || projectPath.endsWith(`/${pattern}`))
-
-      if (entry.isDirectory()) {
-        if (ignored) {
-          targets.push(path)
-        }
-        else {
-          directories.push(path)
-        }
-      }
-      else if (entry.isFile() && (entry.name === '.tern-port' || lockFiles.has(entry.name))) {
-        targets.push(path)
-      }
-    }
-  }
+  const matches = await glob([...ignoredDirectories, ...lockFiles].map(pattern => `**/${pattern}`), {
+    cwd,
+    dot: true,
+    nocase: false,
+    follow: false,
+    withFileTypes: true,
+    ignore: {
+      ignored: path => path.name === '.git' || path.isSymbolicLink(),
+      childrenIgnored: path => path.fullpath() !== cwd && (
+        path.name === '.git' || path.isSymbolicLink() || ignoredDirectories.includes(path.name)
+      ),
+    },
+  })
+  const targets = matches
+    .filter(path => path.isDirectory()
+      ? ignoredDirectories.includes(path.name)
+      : path.isFile() && (path.name === '.tern-port' || lockFiles.has(path.name)))
+    .map(path => path.fullpath())
 
   if (ctx.args.lock && !manager) {
     log.warn('Could not detect the package manager; lockfiles were preserved.')
