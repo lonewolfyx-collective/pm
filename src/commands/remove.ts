@@ -198,7 +198,7 @@ runCommand('remove', async (config) => {
     }
     for (const [flag, packages] of groups) {
       const args = [...packages]
-      if (flag && ['pnpm', 'npm'].includes(config.detect?.name ?? 'npm')) {
+      if (flag) {
         args.push(flag)
       }
       if (monorepo) {
