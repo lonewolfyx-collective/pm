@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { cancel, confirm, isCancel, log, select, text } from '@clack/prompts'
 import { isSeq, parseDocument } from 'yaml'
 import { runCommand } from '../run.ts'
@@ -19,7 +19,7 @@ runCommand('init', {
   let cwd = config.cwd
 
   if (ctx.args.monorepo) {
-    let { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
+    const { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
 
     if (!workspace.length) {
       const create = await confirm({
@@ -33,12 +33,25 @@ runCommand('init', {
       }
     }
 
-    const selected = workspace.length
+    const selection = workspace.length
       ? await select({
           message: 'Select a monorepo workspace to create a project',
-          options: workspace.map(({ label, path }) => ({ value: path, label })),
+          options: [
+            ...workspace.map(({ label, path }) => ({ value: path, label })),
+            { value: '', label: 'Custom workspace', hint: 'Enter a workspace folder name' },
+          ],
         })
-      : await text({
+      : ''
+
+    if (isCancel(selection)) {
+      cancel('Initialization cancelled.')
+      process.exitCode = 1
+      return
+    }
+
+    const customWorkspace = selection === ''
+    const selected = customWorkspace
+      ? await text({
           message: 'Enter the workspace folder name',
           placeholder: 'packages',
           initialValue: 'packages',
@@ -52,6 +65,7 @@ runCommand('init', {
             }
           },
         })
+      : selection
 
     if (isCancel(selected)) {
       cancel('Initialization cancelled.')
@@ -59,15 +73,31 @@ runCommand('init', {
       return
     }
 
-    if (!workspaceFile) {
-      workspaceFile = resolve(config.cwd, 'pnpm-workspace.yaml')
-      await writeFile(workspaceFile, '', 'utf-8')
+    if (!ctx.args.package.trim()) {
+      const name = await text({
+        message: 'Enter the package name',
+        validate(value) {
+          if (!value?.trim()) {
+            return 'Please enter a package name.'
+          }
+        },
+      })
+
+      if (isCancel(name)) {
+        cancel('Initialization cancelled.')
+        process.exitCode = 1
+        return
+      }
+
+      ctx.args = { ...ctx.args, package: name.trim() }
     }
 
-    cwd = workspace.length ? selected : resolve(config.cwd, selected.trim())
+    cwd = customWorkspace
+      ? resolve(workspaceFile ? dirname(workspaceFile) : config.cwd, selected.trim())
+      : selected
 
-    if (!workspace.length) {
-      const source = await readFile(workspaceFile, 'utf8')
+    if (customWorkspace) {
+      const source = workspaceFile ? await readFile(workspaceFile, 'utf8') : ''
       const document = parseDocument(source)
       if (document.errors.length) {
         throw document.errors[0]
@@ -90,28 +120,9 @@ runCommand('init', {
           document.set('packages', [...packages, pattern])
         }
 
-        await writeFile(workspaceFile, document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
+        await writeFile(workspaceFile || resolve(config.cwd, 'pnpm-workspace.yaml'), document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
         workspaceConfig.packages = [...packages, pattern]
       }
-    }
-
-    if (!ctx.args.package.trim()) {
-      const name = await text({
-        message: 'Enter the package name',
-        validate(value) {
-          if (!value?.trim()) {
-            return 'Please enter a package name.'
-          }
-        },
-      })
-
-      if (isCancel(name)) {
-        cancel('Initialization cancelled.')
-        process.exitCode = 1
-        return
-      }
-
-      ctx.args = { ...ctx.args, package: name.trim() }
     }
 
     return
