@@ -1,10 +1,10 @@
 import type { ResolveConfig } from '../types.ts'
-import { readFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { cancel, isCancel, multiselect } from '@clack/prompts'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { isMap, parseDocument } from 'yaml'
-import { runCommand } from '../run.ts'
+import { executeCommand, runCommand } from '../run.ts'
 
 type Project = ResolveConfig['monorepo']['package'][number]
 
@@ -16,15 +16,35 @@ function catalogName(specifier: string | undefined): string | undefined {
 }
 
 export async function cleanCatalogs(
-  workspaceFile: string,
-  files: string[],
-  catalogs: Map<string, Set<string>>,
-  removals: Map<string, string[]>,
-): Promise<{ changed: boolean, content: string }> {
+  monorepo: ResolveConfig['monorepo'],
+  rootFile: string,
+  selections: Map<Project, string[]>,
+): Promise<void> {
+  const { file: workspaceFile, status, package: projects } = monorepo
+  if (!workspaceFile) {
+    return
+  }
+  const files = [...new Set([rootFile, ...(status ? projects.map(project => project.file) : [])])]
   const source = await readFile(workspaceFile, 'utf8')
   const document = parseDocument(source)
   if (document.errors.length) {
     throw document.errors[0]
+  }
+
+  const removals = new Map<string, string[]>()
+  const catalogs = new Map<string, Set<string>>()
+  for (const [project, packages] of selections) {
+    removals.set(project.file, packages)
+    for (const pkg of packages) {
+      for (const field of dependencyFields.filter(field => Object.hasOwn(project.info[field], pkg))) {
+        const name = catalogName(project.info[field][pkg])
+        if (name !== undefined) {
+          const entries = catalogs.get(name) ?? new Set<string>()
+          entries.add(pkg)
+          catalogs.set(name, entries)
+        }
+      }
+    }
   }
 
   const manifests = await Promise.all(files.map(file => readPackageJSON(file)))
@@ -98,7 +118,9 @@ export async function cleanCatalogs(
       changed = document.delete(field) || changed
     }
   }
-  return { changed, content: changed ? document.toString() : source }
+  if (changed) {
+    await writeFile(workspaceFile, document.toString())
+  }
 }
 
 runCommand('remove', async (config) => {
@@ -187,46 +209,32 @@ runCommand('remove', async (config) => {
     }
   }
 
-  const catalogs = new Map<string, Set<string>>()
   for (const [project, packages] of selections) {
     const groups = new Map<string, string[]>()
+
     for (const pkg of packages) {
       const fields = dependencyFields.filter(field => Object.hasOwn(project.info[field], pkg))
       const flag = fields.length === 1
         ? { dependencies: '-P', devDependencies: '-D', optionalDependencies: '-O' }[fields[0]!]
         : ''
       groups.set(flag, [...(groups.get(flag) ?? []), pkg])
-
-      for (const field of fields) {
-        const name = catalogName(project.info[field][pkg])
-        if (name !== undefined) {
-          const entries = catalogs.get(name) ?? new Set<string>()
-          entries.add(pkg)
-          catalogs.set(name, entries)
-        }
-      }
     }
+
     for (const [flag, packages] of groups) {
       const args = [...packages]
+
       if (flag) {
         args.push(flag)
       }
+
       if (monorepo) {
         args.push(...(project.file === rootFile ? ['-w'] : ['-F', project.name]))
       }
+
       const command = resolveCommand(config.detect?.agent ?? 'npm', 'uninstall', args)!
-      console.log(command)
-      // await executeCommand(command, config)
+      await executeCommand(command, config)
     }
   }
 
-  if (workspaceFile) {
-    const files = [...new Set([rootFile, ...(monorepo ? config.monorepo.package.map(project => project.file) : [])])]
-    const removals = new Map([...selections].map(([project, packages]) => [project.file, packages]))
-    const { changed, content } = await cleanCatalogs(workspaceFile, files, catalogs, removals)
-    console.log('workspace changed', changed, content)
-    // if (changed) {
-    //   await writeFile(workspaceFile, content)
-    // }
-  }
+  await cleanCatalogs(config.monorepo, rootFile, selections)
 })
