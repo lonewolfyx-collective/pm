@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { cancel, confirm, isCancel, log, select, text } from '@clack/prompts'
 import { isSeq, parseDocument } from 'yaml'
 import { runCommand } from '../run.ts'
@@ -19,7 +19,7 @@ runCommand('init', {
   let cwd = config.cwd
 
   if (ctx.args.monorepo) {
-    const { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
+    let { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
 
     if (!workspace.length) {
       const create = await confirm({
@@ -59,13 +59,16 @@ runCommand('init', {
       return
     }
 
-    cwd = workspace.length
-      ? selected
-      : resolve(workspaceFile ? dirname(workspaceFile) : config.cwd, selected.trim())
+    if (!workspaceFile) {
+      workspaceFile = resolve(config.cwd, 'pnpm-workspace.yaml')
+      await writeFile(workspaceFile, '', 'utf-8')
+    }
+
+    cwd = workspace.length ? selected : resolve(config.cwd, selected.trim())
 
     if (!workspace.length) {
-      const file = workspaceFile || resolve(config.cwd, 'pnpm-workspace.yaml')
-      const document = parseDocument(workspaceFile ? await readFile(file, 'utf8') : '')
+      const source = await readFile(workspaceFile, 'utf8')
+      const document = parseDocument(source)
       if (document.errors.length) {
         throw document.errors[0]
       }
@@ -87,11 +90,13 @@ runCommand('init', {
           document.set('packages', [...packages, pattern])
         }
 
-        await writeFile(file, document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
+        await writeFile(workspaceFile, document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
         workspaceConfig.packages = [...packages, pattern]
       }
     }
   }
+
+  console.log(123)
 
   const file = resolve(cwd, 'readme.md')
 
