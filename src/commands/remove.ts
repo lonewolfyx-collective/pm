@@ -149,7 +149,6 @@ runCommand('remove', async (config) => {
 
             const declarations = fields.map((field) => {
               const specifier = project.info[field][pkg]
-              console.log('specifier', specifier)
               const name = catalogName(specifier)
               // TODO 不理解的逻辑
               const version = name === 'default'
