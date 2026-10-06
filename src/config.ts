@@ -3,7 +3,7 @@ import type { ArgsDef } from 'citty'
 import type { OptionsArgs } from './args/args'
 import type { CommandArgs, ResolveConfig } from './types.ts'
 import { readFile } from 'node:fs/promises'
-import { dirname, isAbsolute, posix, relative, resolve, sep } from 'node:path'
+import { dirname, posix, resolve } from 'node:path'
 import { findUp } from 'find-up'
 import { glob, hasMagic } from 'glob'
 import { detect } from 'package-manager-detector'
@@ -56,18 +56,19 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
   }))
   const groups = new Map<string, ResolveConfig['monorepo']['workspace'][number]>()
 
-  for (const { label, files } of matches) {
+  for (const { label } of matches) {
     if (label === undefined) {
       continue
     }
 
     const path = resolve(workspaceRoot, label)
-    const hasChildPackage = files.some((file) => {
-      const childPath = relative(path, dirname(file))
-      return childPath !== '' && childPath !== '..' && !childPath.startsWith(`..${sep}`) && !isAbsolute(childPath)
+    const directories = await glob(`${label}/`, {
+      cwd: workspaceRoot,
+      absolute: true,
+      ignore,
     })
 
-    if (hasChildPackage && !groups.has(path)) {
+    if (directories.length && !groups.has(path)) {
       groups.set(path, { label: label === '.' ? 'root' : label, path })
     }
   }
