@@ -1,7 +1,7 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { cancel, confirm, isCancel, outro, select, spinner, text } from '@clack/prompts'
-import { resolvePackageJSON } from 'pkg-types'
+import { resolvePackageJSON, writePackage } from 'pkg-types'
 import { isSeq, parseDocument } from 'yaml'
 import { executeCommand, runCommand } from '../run.ts'
 import { clearDirectory } from '../utils.ts'
@@ -129,6 +129,46 @@ runCommand('init', {
         workspaceConfig.packages = [...packages, pattern]
       }
     }
+
+    const packageDir = resolve(cwd, ctx.args.package)
+    await mkdir(packageDir, { recursive: true })
+
+    // TODO 后续可以添加确认是否使用 根目录 下的 package.json name 做为 scope 以及是否自定义 scope。
+    // TODO 流程：是否使用 package.json name 作为 scope，否 -> 是否自定义 scope，否 -> 使用默认的 ctx.arg.package
+
+    const s = spinner()
+    s.start('workspace package init')
+
+    await writePackage(resolve(packageDir, 'package.json'), {
+      name: ctx.args.package,
+      type: 'module',
+      version: '0.0.0',
+      packageManager: 'pnpm@12.8.1',
+      description: '',
+      author: 'lonewolfyx <https://github.com/lonewolfyx>',
+      license: 'MIT',
+      funding: 'https://github.com/sponsors/lonewolfyx',
+      homepage: `https://github.com/lonewolfyx/${ctx.args.package}#readme`,
+      repository: {
+        type: 'git',
+        url: `git+https://github.com/lonewolfyx/${ctx.args.package}.git`,
+        directory: `${selected}/${ctx.args.package}`,
+      },
+      bugs: `https://github.com/lonewolfyx/${ctx.args.package}/issues`,
+      keywords: [],
+      sideEffects: false,
+      exports: {
+        '.': './dist/index.mjs',
+        './package.json': './package.json',
+      },
+      types: './dist/index.d.mts',
+      files: [
+        'dist',
+      ],
+    })
+
+    s.stop('workspace package create success 🎉')
+
     return
   }
 
