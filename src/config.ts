@@ -25,14 +25,14 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
   }
 
   const workspace = parse(await readFile(workspaceFile, 'utf8')) as PnpmWorkspaceSpecification
+  monorepo.file = workspaceFile
+  monorepo.workspaceConfig = workspace ?? {}
   const patterns = workspace?.packages
 
   if (!Array.isArray(patterns) || !patterns.length) {
     return monorepo
   }
 
-  monorepo.file = workspaceFile
-  monorepo.workspaceConfig = workspace
   monorepo.status = true
 
   const includes = patterns.filter(pattern => !pattern.startsWith('!')).map(pattern => posix.normalize(pattern))
