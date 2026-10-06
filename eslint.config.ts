@@ -1,7 +1,6 @@
-import type { Linter } from 'eslint'
 import antfu from '@antfu/eslint-config'
 
-const config = antfu({
+export default antfu({
   pnpm: true,
   type: 'lib',
   typescript: true,
@@ -11,6 +10,9 @@ const config = antfu({
     'antfu/top-level-function': 'off',
     'regexp/no-unused-capturing-group': 'off',
   },
-}) as Linter.Config
-
-export default config
+}, {
+  files: ['tests/**/*.mjs'],
+  rules: {
+    'test/no-import-node-test': 'off',
+  },
+})

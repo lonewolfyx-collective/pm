@@ -3,8 +3,8 @@ import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import test from 'vitest'
 import { parse } from 'yaml'
 
 const cli = fileURLToPath(new URL('../bin/catalog.mjs', import.meta.url))
@@ -233,4 +233,94 @@ test('referenced default catalog removal is rejected and malformed inputs never 
   const unchanged = invalid.snapshot()
   assert.equal(invalid.run(['remove', 'tsdown']).status, 1)
   assert.deepEqual(invalid.snapshot(), unchanged)
+})
+
+test('--unUsed lists and prunes unused entries and catalogs while preserving every reference', (t) => {
+  const project = fixture(t, `packages:
+  - packages/*
+  - '!packages/excluded'
+catalog:
+  root-tool: ^1.0.0
+  default-unused: ^2.0.0
+catalogs:
+  build:
+    tsdown: ^0.23.0
+    unused: ^1.0.0
+  prod:
+    tsdown: ^0.22.0
+  overrides-only:
+    '@scope/tool': ^2.0.0
+  orphan:
+    orphan-tool: ^1.0.0
+  empty: {}
+overrides:
+  'parent>@scope/tool@^2': catalog:overrides-only
+`, {
+    'package.json': { devDependencies: { 'root-tool': 'catalog:' } },
+    'packages/app/package.json': {
+      dependencies: { tsdown: 'catalog:build' },
+      peerDependencies: { 'root-tool': 'catalog:default' },
+    },
+    'packages/excluded/package.json': { dependencies: { 'orphan-tool': 'catalog:orphan' } },
+  })
+  const root = project.read('package.json')
+  const app = project.read('packages/app/package.json')
+  const excluded = project.read('packages/excluded/package.json')
+  const result = project.run(['--unUsed', '--cwd', 'packages/app'], [true])
+  assert.equal(result.status, 0, result.output)
+  for (const item of ['default-unused (default: ^2.0.0)', 'unused (build: ^1.0.0)', 'tsdown (prod: ^0.22.0)', 'orphan-tool (orphan: ^1.0.0)']) {
+    assert.ok(result.output.includes(item), result.output)
+  }
+  assert.match(result.output, /Unused catalogs:[\s\S]*prod[\s\S]*orphan[\s\S]*empty/)
+  assert.ok(result.output.indexOf('Unused catalogs:') < result.output.indexOf('Prompt: Delete all listed'))
+  assert.deepEqual(project.workspace().catalog, { 'root-tool': '^1.0.0' })
+  assert.deepEqual(project.workspace().catalogs, {
+    'build': { tsdown: '^0.23.0' },
+    'overrides-only': { '@scope/tool': '^2.0.0' },
+  })
+  assert.equal(project.workspace().overrides['parent>@scope/tool@^2'], 'catalog:overrides-only')
+  assert.equal(project.read('package.json'), root)
+  assert.equal(project.read('packages/app/package.json'), app)
+  assert.equal(project.read('packages/excluded/package.json'), excluded)
+})
+
+test('--unUsed refusal and cancellation preserve all files', (t) => {
+  const project = fixture(t, 'catalogs:\n  build:\n    tsdown: ^0.23.0\n  empty: {}\n')
+  const before = project.snapshot()
+  for (const answer of [false, 'cancel']) {
+    const result = project.run(['--unUsed'], [answer])
+    assert.equal(result.status, 1, result.output)
+    assert.match(result.output, /tsdown \(build: \^0\.23\.0\)/)
+    assert.match(result.output, /Unused catalogs:[\s\S]*build[\s\S]*empty/)
+    assert.deepEqual(project.snapshot(), before)
+  }
+})
+
+test('--unUsed removes unused default and empty catalogs without leaving an empty container', (t) => {
+  const project = fixture(t, 'catalog:\n  tsdown: ^0.23.0\ncatalogs:\n  empty: {}\n')
+  const result = project.run(['--unUsed'], [true])
+  assert.equal(result.status, 0, result.output)
+  assert.match(result.output, /Unused catalogs:[\s\S]*default[\s\S]*empty/)
+  assert.equal(project.workspace().catalog, undefined)
+  assert.equal(project.workspace().catalogs, undefined)
+})
+
+test('--unUsed does not prompt or write when every catalog entry is used', (t) => {
+  const project = fixture(t, '# keep formatting\ncatalog:\n  tsdown: ^0.23.0\n', {
+    'package.json': { optionalDependencies: { tsdown: 'catalog:' } },
+  })
+  const before = project.snapshot()
+  const result = project.run(['--unUsed'])
+  assert.equal(result.status, 0, result.output)
+  assert.match(result.output, /No unused catalog dependencies or catalogs were found/)
+  assert.deepEqual(project.snapshot(), before)
+})
+
+test('--unUsed rejects subcommands before modifying files', (t) => {
+  const project = fixture(t, 'catalogs:\n  build:\n    tsdown: ^0.23.0\n')
+  const before = project.snapshot()
+  const result = project.run(['--unUsed', 'remove', 'tsdown'])
+  assert.equal(result.status, 1, result.output)
+  assert.match(result.output, /--unUsed cannot be combined with a subcommand/)
+  assert.deepEqual(project.snapshot(), before)
 })

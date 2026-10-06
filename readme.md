@@ -87,12 +87,14 @@ catalog move tsdown --to build
 catalog remove tsdown
 catalog remove --catalog build
 catalog rename --from build --to unbuild
+catalog --unUsed
 ```
 
 - `move` keeps the dependency's version and updates references to its destination. Use `--to default` to move it to the default `catalog`. New catalog names are supported.
 - `remove <dependency>` deletes its catalog entry. If it is in use, confirmation is required before also removing its matching dependency declarations and workspace overrides.
 - `remove --catalog <name>` deletes unused entries, moves referenced entries to the default `catalog`, and updates their references to `catalog:`. A referenced default catalog cannot be removed.
 - `rename` keeps all entries and updates references. `--form` and `-to` are accepted for compatibility with the original command spelling.
+- `--unUsed` lists dependencies without references in their catalog and catalogs without any references, including empty catalogs. After one confirmation, it removes all listed entries and catalogs. If there is nothing to remove, it exits without prompting or writing files.
 
 Missing arguments are filled through `@clack/prompts`. `catalog remove` first asks whether to remove a dependency or a catalog; `catalog remove --catalog` goes directly to catalog selection. `catalog move` selects a dependency and destination, while `catalog rename` selects the source and asks for a new name. When a dependency exists in several catalogs, select its source catalog.
 

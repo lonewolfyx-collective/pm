@@ -3,7 +3,7 @@ import type { Document, YAMLMap } from 'yaml'
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, posix } from 'node:path'
 import { cancel, confirm, isCancel, log, select, text } from '@clack/prompts'
-import { createMain, defineCommand } from 'citty'
+import { createMain, defineCommand, showUsage } from 'citty'
 import { findUp } from 'find-up'
 import { glob } from 'glob'
 import { isMap, parseDocument } from 'yaml'
@@ -247,6 +247,62 @@ async function saveWorkspace(workspace: Workspace): Promise<void> {
 
 const main = createMain(defineCommand({
   meta: { name: 'catalog', version, description: 'Manage pnpm workspace catalogs' },
+  args: {
+    cwd: cwdArg,
+    unUsed: { type: 'boolean', description: 'List unused dependencies and catalogs, then confirm removal' },
+  },
+  setup({ args }) {
+    if (args.unUsed && args._.length) {
+      throw new Error('--unUsed cannot be combined with a subcommand.')
+    }
+  },
+  async run({ args, cmd }) {
+    // citty also runs the parent handler after a subcommand.
+    if (args._.length) {
+      return
+    }
+    if (!args.unUsed) {
+      return showUsage(cmd)
+    }
+    const workspace = await readWorkspace(args.cwd)
+    const unused = workspace.catalogs.map((catalog) => {
+      const references = workspace.references.filter(reference => reference.name === catalog.name)
+      const dependencies = catalog.entries.items.map(entry => String(entry.key))
+        .filter(dependency => !references.some(reference => reference.dependency === dependency))
+      return { catalog, dependencies, removeCatalog: references.length === 0 }
+    })
+    const dependencies = unused.flatMap(({ catalog, dependencies }) => dependencies
+      .map(dependency => `${dependency} (${catalog.name}: ${String(catalog.entries.get(dependency))})`))
+    const catalogs = unused.filter(entry => entry.removeCatalog).map(entry => entry.catalog.name)
+    if (!dependencies.length && !catalogs.length) {
+      log.info('No unused catalog dependencies or catalogs were found.')
+      return
+    }
+    log.info(`Unused catalog dependencies:\n${dependencies.length ? dependencies.join('\n') : '(none)'}`)
+    log.info(`Unused catalogs:\n${catalogs.length ? catalogs.join('\n') : '(none)'}`)
+    const confirmed = await confirm({
+      message: 'Delete all listed unused dependencies and catalogs?',
+      initialValue: false,
+    })
+    if (isCancel(confirmed) || !confirmed) {
+      return cancelled()
+    }
+    for (const { catalog, dependencies, removeCatalog } of unused) {
+      if (removeCatalog) {
+        workspace.document.deleteIn(catalog.path)
+      }
+      else {
+        for (const dependency of dependencies) {
+          workspace.document.deleteIn([...catalog.path, dependency])
+        }
+      }
+    }
+    const named = workspace.document.get('catalogs')
+    if (isMap(named) && !named.items.length) {
+      workspace.document.delete('catalogs')
+    }
+    await saveWorkspace(workspace)
+  },
   subCommands: {
     move: defineCommand({
       meta: { description: 'Move a dependency to another catalog' },
