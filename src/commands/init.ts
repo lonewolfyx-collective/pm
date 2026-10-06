@@ -1,6 +1,7 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { cancel, confirm, isCancel, log, select, text } from '@clack/prompts'
+import { isSeq, parseDocument } from 'yaml'
 import { runCommand } from '../run.ts'
 
 runCommand('init', {
@@ -18,7 +19,7 @@ runCommand('init', {
   let cwd = config.cwd
 
   if (ctx.args.monorepo) {
-    const { workspace, file: workspaceFile } = config.monorepo
+    const { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
 
     if (!workspace.length) {
       const create = await confirm({
@@ -63,7 +64,32 @@ runCommand('init', {
       : resolve(workspaceFile ? dirname(workspaceFile) : config.cwd, selected.trim())
 
     if (!workspace.length) {
+      const file = workspaceFile || resolve(config.cwd, 'pnpm-workspace.yaml')
+      const document = parseDocument(workspaceFile ? await readFile(file, 'utf8') : '')
+      if (document.errors.length) {
+        throw document.errors[0]
+      }
+
+      const packages = workspaceConfig.packages ?? []
+      if (!Array.isArray(packages)) {
+        throw new TypeError('The packages field in pnpm-workspace.yaml must be an array.')
+      }
+
       await mkdir(cwd, { recursive: true })
+
+      const pattern = `${selected.trim()}/*`
+      if (!packages.includes(pattern)) {
+        const node = document.get('packages', true)
+        if (isSeq(node)) {
+          node.add(pattern)
+        }
+        else {
+          document.set('packages', [...packages, pattern])
+        }
+
+        await writeFile(file, document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
+        workspaceConfig.packages = [...packages, pattern]
+      }
     }
   }
 
