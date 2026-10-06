@@ -16,11 +16,11 @@ function catalogName(specifier: string | undefined): string | undefined {
 }
 
 export async function cleanCatalogs(
-  monorepo: ResolveConfig['monorepo'],
+  config: ResolveConfig,
   rootFile: string,
   selections: Map<Project, string[]>,
 ): Promise<void> {
-  const { file: workspaceFile, status, package: projects } = monorepo
+  const { file: workspaceFile, status, package: projects } = config.monorepo
   if (!workspaceFile) {
     return
   }
@@ -120,6 +120,8 @@ export async function cleanCatalogs(
   }
   if (changed) {
     await writeFile(workspaceFile, document.toString())
+
+    await executeCommand(resolveCommand(config.detect?.agent ?? 'npm', 'install', [])!, config)
   }
 }
 
@@ -227,5 +229,5 @@ runCommand('remove', async (config) => {
     }
   }
 
-  await cleanCatalogs(config.monorepo, rootFile, selections)
+  await cleanCatalogs(config, rootFile, selections)
 })
