@@ -129,33 +129,24 @@ runCommand('remove', async (config) => {
     throw new Error('Could not find pnpm-workspace.yaml for the monorepo.')
   }
   const rootFile = await resolvePackageJSON(config.cwd)
+  const manifest = await readPackageJSON(rootFile)
+  const rootProject: Project = {
+    name: manifest.name ?? 'root',
+    file: rootFile,
+    info: {
+      dependencies: manifest.dependencies ?? {},
+      devDependencies: manifest.devDependencies ?? {},
+      optionalDependencies: manifest.optionalDependencies ?? {},
+    },
+  }
+  const projects = monorepo
+    ? [...config.monorepo.package.filter(project => project.file !== rootFile), rootProject]
+    : [rootProject]
   const selections = new Map<Project, string[]>()
-  let rootProject: Project | undefined
 
   // Resolve all targets before modifying any files, so cancellation leaves the project intact.
   for (const pkg of config.packages) {
-    let candidates = monorepo
-      ? config.monorepo.package.filter(project => dependencyFields.some(field => Object.hasOwn(project.info[field], pkg)))
-      : []
-
-    // Only inspect the root manifest when no workspace package declares the dependency.
-    if (!candidates.length) {
-      if (!rootProject) {
-        const manifest = await readPackageJSON(rootFile)
-        rootProject = {
-          name: manifest.name ?? 'root',
-          file: rootFile,
-          info: {
-            dependencies: manifest.dependencies ?? {},
-            devDependencies: manifest.devDependencies ?? {},
-            optionalDependencies: manifest.optionalDependencies ?? {},
-          },
-        }
-      }
-      if (dependencyFields.some(field => Object.hasOwn(rootProject!.info[field], pkg))) {
-        candidates = [rootProject]
-      }
-    }
+    const candidates = projects.filter(project => dependencyFields.some(field => Object.hasOwn(project.info[field], pkg)))
     if (!candidates.length) {
       throw new Error(`Dependency "${pkg}" was not found in the project.`)
     }
