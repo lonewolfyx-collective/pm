@@ -37,7 +37,7 @@ export async function cleanCatalogs(
           continue
         }
         const name = catalogName(specifier)
-        if (name !== undefined) {
+        if (name!) {
           const packages = referenced.get(name) ?? new Set<string>()
           packages.add(pkg)
           referenced.set(name, packages)
