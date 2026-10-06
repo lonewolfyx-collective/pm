@@ -1,5 +1,5 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { cancel, confirm, isCancel, outro, select, spinner, text } from '@clack/prompts'
 import { resolvePackageJSON } from 'pkg-types'
 import { isSeq, parseDocument } from 'yaml'
@@ -21,7 +21,7 @@ runCommand('init', {
   let cwd = config.cwd
 
   if (ctx.args.monorepo) {
-    const { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
+    let { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
 
     if (!workspace.length) {
       const create = await confirm({
@@ -94,9 +94,12 @@ runCommand('init', {
       ctx.args = { ...ctx.args, package: name.trim() }
     }
 
-    cwd = customWorkspace
-      ? resolve(workspaceFile ? dirname(workspaceFile) : config.cwd, selected.trim())
-      : selected
+    if (!workspaceFile) {
+      workspaceFile = resolve(config.cwd, 'pnpm-workspace.yaml')
+      await writeFile(workspaceFile, '', 'utf-8')
+    }
+
+    cwd = customWorkspace ? resolve(config.cwd, selected.trim()) : selected
 
     if (customWorkspace) {
       const source = workspaceFile ? await readFile(workspaceFile, 'utf8') : ''
@@ -122,7 +125,7 @@ runCommand('init', {
           document.set('packages', [...packages, pattern])
         }
 
-        await writeFile(workspaceFile || resolve(config.cwd, 'pnpm-workspace.yaml'), document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
+        await writeFile(workspaceFile, document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
         workspaceConfig.packages = [...packages, pattern]
       }
     }
