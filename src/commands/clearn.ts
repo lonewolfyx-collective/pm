@@ -1,8 +1,9 @@
-import { rm } from 'node:fs/promises'
-import { relative, resolve } from 'node:path'
-import { log } from '@clack/prompts'
+import { resolve } from 'node:path'
+import { log, note, outro, progress, spinner } from '@clack/prompts'
+import { cyan, red, yellow } from 'ansis'
 import { glob } from 'glob'
 import { LOCKS } from 'package-manager-detector'
+import { rimraf } from 'rimraf'
 import { lock } from '../args/clearn.ts'
 import { runCommand } from '../run.ts'
 
@@ -42,6 +43,10 @@ runCommand('clearn', lock, async (config, ctx) => {
         .filter(([file, name]) => name === manager && !file.endsWith('-workspace.yaml'))
         .map(([file]) => file)
     : [])
+
+  const s = spinner()
+  s.start('Checking the "old stuff" in the project...')
+
   const matches = await glob([...ignoredDirectories, ...lockFiles].map(pattern => `**/${pattern}`), {
     cwd,
     dot: true,
@@ -55,6 +60,7 @@ runCommand('clearn', lock, async (config, ctx) => {
       ),
     },
   })
+
   const targets = matches
     .filter(path => path.isDirectory()
       ? ignoredDirectories.includes(path.name)
@@ -65,13 +71,34 @@ runCommand('clearn', lock, async (config, ctx) => {
     log.warn('Could not detect the package manager; lockfiles were preserved.')
   }
 
-  if (!targets.length) {
-    log.info('Nothing to remove.')
-    return
-  }
+  s.stop(`Find ${red(targets.length)} cleanable targets (e.g., node_modules, etc.)`)
 
-  for (const path of targets.sort()) {
-    await rm(path, { recursive: true, force: true })
-    log.success(`Removed ${relative(cwd, path)}`)
+  if (targets.length > 0) {
+    const prog = progress({
+      indicator: 'timer',
+      style: 'block',
+      max: targets.length,
+    })
+
+    prog.start('Freeing up disk space...')
+
+    for (const folder of targets) {
+      prog.advance(1, `Delete: ${red(folder)}`)
+      await rimraf(folder)
+    }
+
+    prog.stop('Clean up!')
+
+    note(
+      targets
+        .map(f => `${yellow('-')} ${cyan(f.replace(config.cwd, ''))}`)
+        .join('\n'),
+      'Delete directory:',
+    )
+
+    outro(`🎉 Done.`)
+  }
+  else {
+    outro('No targets found.')
   }
 })
