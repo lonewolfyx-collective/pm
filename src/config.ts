@@ -83,6 +83,7 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
       info: {
         dependencies: pkg.dependencies ?? {},
         devDependencies: pkg.devDependencies ?? {},
+        optionalDependencies: pkg.optionalDependencies ?? {},
       },
     }
   }))
