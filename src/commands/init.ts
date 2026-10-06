@@ -1,8 +1,10 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
-import { cancel, confirm, isCancel, log, select, text } from '@clack/prompts'
+import { cancel, confirm, isCancel, outro, select, text } from '@clack/prompts'
+import { resolvePackageJSON } from 'pkg-types'
 import { isSeq, parseDocument } from 'yaml'
-import { runCommand } from '../run.ts'
+import { executeCommand, runCommand } from '../run.ts'
+import { clearDirectory } from '../utils.ts'
 
 runCommand('init', {
   package: {
@@ -124,25 +126,28 @@ runCommand('init', {
         workspaceConfig.packages = [...packages, pattern]
       }
     }
-
     return
   }
 
-  console.log(123)
+  const packageJsonExists = await access(await resolvePackageJSON(config.cwd))
+    .then(() => true)
+    .catch(() => false)
 
-  const file = resolve(cwd, 'readme.md')
+  if (packageJsonExists) {
+    const shouldOverwrite = await confirm({
+      message: 'A project already exists in the current directory. Overwrite it with a new project? (All files in the current directory will be deleted.)',
+    })
 
-  try {
-    await writeFile(file, '', { flag: 'wx' })
-  }
-  catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
-      log.warn(`README already exists: ${file}`)
+    if (isCancel(shouldOverwrite) || !shouldOverwrite) {
+      outro('Operation cancelled.')
       return
     }
 
-    throw error
+    await clearDirectory(config.cwd)
   }
 
-  log.success(`Created ${file}`)
+  await executeCommand({
+    command: 'npx',
+    args: ['-y', '@lonewolfyx/setup'],
+  }, config)
 })
