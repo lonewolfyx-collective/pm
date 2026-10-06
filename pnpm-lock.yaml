@@ -51,6 +51,9 @@ importers:
       '@lonewolfyx/tsconfig':
         specifier: ^0.0.6
         version: 0.0.6(typescript@6.0.3)
+      '@schemastore/pnpm-workspace':
+        specifier: ^1.0.13
+        version: 1.0.13
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.4
@@ -570,6 +573,9 @@ packages:
 
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
+
+  '@schemastore/pnpm-workspace@1.0.13':
+    resolution: {integrity: sha512-BKR9/juNlZKSGM4hSlsEMZWlCULled1P9dPQ84ai+PQowMyIjlbTOrfVbE34D1As/A7N8NfgSfnxQCzajdP3LA==}
 
   '@sindresorhus/base62@1.0.0':
     resolution: {integrity: sha512-TeheYy0ILzBEI/CO55CP6zJCSdSWeRtGnHy8U8dWSUH4I68iqTsy7HkMktR4xakThc9jotkPQUXT4ITdbV7cHA==}
@@ -2428,6 +2434,8 @@ snapshots:
     optional: true
 
   '@rolldown/pluginutils@1.0.1': {}
+
+  '@schemastore/pnpm-workspace@1.0.13': {}
 
   '@sindresorhus/base62@1.0.0': {}
 
