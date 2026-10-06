@@ -1,3 +1,4 @@
+import type { PnpmWorkspaceSpecification } from '@schemastore/pnpm-workspace'
 import type { ArgsDef, CommandContext, CommandMeta as CommandMetaData } from 'citty'
 import type { DetectResult } from 'package-manager-detector'
 import type { PackageJson } from 'pkg-types'
@@ -9,7 +10,9 @@ export interface ResolveConfig {
   packages: string[]
   monorepo: {
     status: boolean
-    packages: {
+    file: string
+    workspaceConfig: PnpmWorkspaceSpecification
+    workspace: {
       label: string
       path: string
     }[]

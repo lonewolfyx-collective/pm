@@ -1,3 +1,4 @@
+import type { PnpmWorkspaceSpecification } from '@schemastore/pnpm-workspace'
 import type { ArgsDef } from 'citty'
 import type { OptionsArgs } from './args/args'
 import type { CommandArgs, ResolveConfig } from './types.ts'
@@ -12,8 +13,10 @@ import { parse } from 'yaml'
 const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> => {
   const monorepo: ResolveConfig['monorepo'] = {
     status: false,
-    packages: [],
+    file: '',
+    workspace: [],
     package: [],
+    workspaceConfig: {},
   }
   const workspaceFile = await findUp('pnpm-workspace.yaml', { cwd })
 
@@ -21,13 +24,15 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
     return monorepo
   }
 
-  const workspace = parse(await readFile(workspaceFile, 'utf8')) as { packages?: unknown }
+  const workspace = parse(await readFile(workspaceFile, 'utf8')) as PnpmWorkspaceSpecification
   const patterns = workspace?.packages
 
   if (!Array.isArray(patterns) || !patterns.length) {
     return monorepo
   }
 
+  monorepo.file = workspaceFile
+  monorepo.workspaceConfig = workspace
   monorepo.status = true
 
   const includes = patterns.filter(pattern => !pattern.startsWith('!')).map(pattern => posix.normalize(pattern))
@@ -49,7 +54,7 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
       label: wildcardIndex === -1 ? undefined : segments.slice(0, wildcardIndex).join('/') || '.',
     }
   }))
-  const groups = new Map<string, ResolveConfig['monorepo']['packages'][number]>()
+  const groups = new Map<string, ResolveConfig['monorepo']['workspace'][number]>()
 
   for (const { label, files } of matches) {
     if (label === undefined) {
@@ -67,7 +72,7 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
     }
   }
 
-  monorepo.packages = [...groups.values()]
+  monorepo.workspace = [...groups.values()]
   const files = matches.flatMap(match => match.files)
 
   monorepo.package = await Promise.all([...new Set(files)].sort().map(async (file) => {
