@@ -1,8 +1,10 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
-import { cancel, confirm, isCancel, log, select, text } from '@clack/prompts'
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { cancel, confirm, isCancel, outro, select, spinner, text } from '@clack/prompts'
+import { resolvePackageJSON, writePackage } from 'pkg-types'
 import { isSeq, parseDocument } from 'yaml'
-import { runCommand } from '../run.ts'
+import { executeCommand, runCommand } from '../run.ts'
+import { clearDirectory } from '../utils.ts'
 
 runCommand('init', {
   package: {
@@ -19,7 +21,7 @@ runCommand('init', {
   let cwd = config.cwd
 
   if (ctx.args.monorepo) {
-    const { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
+    let { workspace, file: workspaceFile, workspaceConfig } = config.monorepo
 
     if (!workspace.length) {
       const create = await confirm({
@@ -92,9 +94,12 @@ runCommand('init', {
       ctx.args = { ...ctx.args, package: name.trim() }
     }
 
-    cwd = customWorkspace
-      ? resolve(workspaceFile ? dirname(workspaceFile) : config.cwd, selected.trim())
-      : selected
+    if (!workspaceFile) {
+      workspaceFile = resolve(config.cwd, 'pnpm-workspace.yaml')
+      await writeFile(workspaceFile, '', 'utf-8')
+    }
+
+    cwd = customWorkspace ? resolve(config.cwd, selected.trim()) : selected
 
     if (customWorkspace) {
       const source = workspaceFile ? await readFile(workspaceFile, 'utf8') : ''
@@ -120,29 +125,77 @@ runCommand('init', {
           document.set('packages', [...packages, pattern])
         }
 
-        await writeFile(workspaceFile || resolve(config.cwd, 'pnpm-workspace.yaml'), document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
+        await writeFile(workspaceFile, document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
         workspaceConfig.packages = [...packages, pattern]
       }
     }
 
+    const packageDir = resolve(cwd, ctx.args.package)
+    await mkdir(packageDir, { recursive: true })
+
+    // TODO 后续可以添加确认是否使用 根目录 下的 package.json name 做为 scope 以及是否自定义 scope。
+    // TODO 流程：是否使用 package.json name 作为 scope，否 -> 是否自定义 scope，否 -> 使用默认的 ctx.arg.package
+
+    const s = spinner()
+    s.start('workspace package init')
+
+    await writePackage(resolve(packageDir, 'package.json'), {
+      name: ctx.args.package,
+      type: 'module',
+      version: '0.0.0',
+      packageManager: 'pnpm@12.8.1',
+      description: '',
+      author: 'lonewolfyx <https://github.com/lonewolfyx>',
+      license: 'MIT',
+      funding: 'https://github.com/sponsors/lonewolfyx',
+      homepage: `https://github.com/lonewolfyx/${ctx.args.package}#readme`,
+      repository: {
+        type: 'git',
+        url: `git+https://github.com/lonewolfyx/${ctx.args.package}.git`,
+        directory: `${selected}/${ctx.args.package}`,
+      },
+      bugs: `https://github.com/lonewolfyx/${ctx.args.package}/issues`,
+      keywords: [],
+      sideEffects: false,
+      exports: {
+        '.': './dist/index.mjs',
+        './package.json': './package.json',
+      },
+      types: './dist/index.d.mts',
+      files: [
+        'dist',
+      ],
+    })
+
+    s.stop('workspace package create success 🎉')
+
     return
   }
 
-  console.log(123)
+  const packageJsonExists = await access(await resolvePackageJSON(config.cwd))
+    .then(() => true)
+    .catch(() => false)
 
-  const file = resolve(cwd, 'readme.md')
+  if (packageJsonExists) {
+    const shouldOverwrite = await confirm({
+      message: 'A project already exists in the current directory. Overwrite it with a new project? (All files in the current directory will be deleted.)',
+    })
 
-  try {
-    await writeFile(file, '', { flag: 'wx' })
-  }
-  catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
-      log.warn(`README already exists: ${file}`)
+    if (isCancel(shouldOverwrite) || !shouldOverwrite) {
+      outro('Operation cancelled.')
       return
     }
 
-    throw error
+    await clearDirectory(config.cwd)
   }
 
-  log.success(`Created ${file}`)
+  const s = spinner()
+  s.start('Init Project...')
+
+  await executeCommand({
+    command: 'npx',
+    args: ['-y', '@lonewolfyx/setup'],
+  }, config)
+
+  s.stop('🎉 Done')
 })
