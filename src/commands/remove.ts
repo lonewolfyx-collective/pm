@@ -159,6 +159,7 @@ runCommand('remove', async (config) => {
               const catalogVersionRange = name === 'default'
                 ? workspaceConfig.catalog?.[pkg] ?? workspaceConfig.catalogs?.default?.[pkg]
                 : name === undefined ? undefined : workspaceConfig.catalogs?.[name]?.[pkg]
+
               return `${field}: ${specifier}${catalogVersionRange ? ` (${catalogVersionRange})` : ''}`
             })
 
