@@ -46,13 +46,17 @@ export async function cleanCatalogs(
     }
   }
   const overrides = document.get('overrides', true)
-  const isReferenced = (name: string, pkg?: string): boolean => {
-    return (pkg === undefined ? referenced.has(name) : referenced.get(name)?.has(pkg) === true)
+  const isReferenced = (name: string, pkg: string): boolean => {
+    return referenced.get(name)?.has(pkg) === true
       || (isMap(overrides) && overrides.items.some((entry) => {
         const selector = String(entry.key).split('>').pop()!.trim()
         return catalogName(String(entry.value)) === name
-          && (pkg === undefined || selector === pkg || selector.startsWith(`${pkg}@`))
+          && (selector === pkg || selector.startsWith(`${pkg}@`))
       }))
+  }
+  const isCatalogReferenced = (name: string): boolean => {
+    return referenced.has(name)
+      || (isMap(overrides) && overrides.items.some(entry => catalogName(String(entry.value)) === name))
   }
 
   let changed = false
@@ -68,7 +72,7 @@ export async function cleanCatalogs(
         changed = document.deleteIn(['catalogs', name, pkg]) || changed
       }
     }
-    if (!isReferenced(name)) {
+    if (!isCatalogReferenced(name)) {
       if (name === 'default') {
         changed = document.delete('catalog') || changed
       }
@@ -82,7 +86,7 @@ export async function cleanCatalogs(
   if (isMap(namedCatalogs)) {
     for (const entry of [...namedCatalogs.items]) {
       const value = namedCatalogs.get(entry.key)
-      if (!isReferenced(String(entry.key)) && (value == null || (isMap(value) && !value.items.length))) {
+      if (!isCatalogReferenced(String(entry.key)) && (value == null || (isMap(value) && !value.items.length))) {
         changed = namedCatalogs.delete(entry.key) || changed
       }
     }
