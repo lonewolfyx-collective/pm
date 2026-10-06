@@ -1,6 +1,6 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
-import { cancel, confirm, isCancel, outro, select, text } from '@clack/prompts'
+import { cancel, confirm, isCancel, outro, select, spinner, text } from '@clack/prompts'
 import { resolvePackageJSON } from 'pkg-types'
 import { isSeq, parseDocument } from 'yaml'
 import { executeCommand, runCommand } from '../run.ts'
@@ -146,8 +146,13 @@ runCommand('init', {
     await clearDirectory(config.cwd)
   }
 
+  const s = spinner()
+  s.start('Init Project...')
+
   await executeCommand({
     command: 'npx',
     args: ['-y', '@lonewolfyx/setup'],
   }, config)
+
+  s.stop('🎉 Done')
 })
