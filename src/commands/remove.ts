@@ -185,7 +185,7 @@ runCommand('remove', async (config) => {
             return {
               value: project,
               label: `${project.name} (${declarations.join(', ')})`,
-              hint: project.file,
+              // hint: project.file,
             }
           }),
           required: true,
