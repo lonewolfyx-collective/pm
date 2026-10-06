@@ -29,7 +29,7 @@
     "dev": "./bin/dev.mjs",
     "build": "./bin/build.mjs",
     "clearn": "./bin/clearn.mjs",
-    "init": "./bin/clearn.mjs"
+    "init": "./bin/init.mjs"
   },
   "scripts": {
     "build": "tsdown",
@@ -72,5 +72,8 @@
   },
   "lint-staged": {
     "*": "eslint --fix"
+  },
+  "inlinedDependencies": {
+    "@schemastore/pnpm-workspace": "1.0.13"
   }
 }
