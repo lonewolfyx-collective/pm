@@ -16,6 +16,7 @@
   "keywords": [],
   "exports": {
     "./build": "./dist/build.mjs",
+    "./catalog": "./dist/catalog.mjs",
     "./clearn": "./dist/clearn.mjs",
     "./dev": "./dist/dev.mjs",
     "./init": "./dist/init.mjs",
@@ -24,6 +25,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
+    "catalog": "./bin/catalog.mjs",
     "ni": "./bin/ni.mjs",
     "remove": "./bin/remove.mjs",
     "dev": "./bin/dev.mjs",
@@ -36,7 +38,8 @@
     "dev": "tsdown --watch",
     "lint": "eslint .",
     "lint:fix": "eslint --fix",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "test": "pnpm build && node --test tests/catalog.test.mjs"
   },
   "dependencies": {
     "@clack/core": "^1.5.1",

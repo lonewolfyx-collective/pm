@@ -11,7 +11,7 @@ Interactive CLI tools for package management, with first-class support for pnpm 
 pnpm i -g @lonewolfyx/pm
 ```
 
-Installs the `ni`, `remove`, `dev`, `build`, `clearn` and `init` commands globally. The active package manager is auto-detected from lockfiles and the `packageManager` field.
+Installs the `ni`, `remove`, `catalog`, `dev`, `build`, `clearn` and `init` commands globally. The active package manager is auto-detected from lockfiles and the `packageManager` field.
 
 
 ## 🚀 Commands
@@ -20,6 +20,7 @@ Installs the `ni`, `remove`, `dev`, `build`, `clearn` and `init` commands global
 | --- | --- |
 | `ni` | Install packages, interactively assign them to catalogs |
 | `remove` | Remove dependencies across workspace projects and prune unused catalogs |
+| `catalog` | Move catalog dependencies, remove dependencies or catalogs, and rename catalogs |
 | `dev` / `build` | Fuzzy-find and run the matching `dev` / `build` script |
 | `clearn` | Remove build artifacts and stale lockfiles |
 | `init` | Scaffold a project in a monorepo workspace |
@@ -76,6 +77,30 @@ remove eslint vite
 The flag (`-P`, `-D`, `-O`) follows the field where the dependency is declared. In a monorepo, the right scope is added for you — `-w` at the root, `-F <name>` for a workspace project. When several projects declare the same dependency, pick the targets from a multiselect that shows every declaration, including resolved catalog versions.
 
 Afterwards, catalog entries that nothing references anymore are pruned from `pnpm-workspace.yaml` — including catalogs left empty — and an install is run to sync the lockfile.
+
+### `catalog`
+
+Manage `pnpm-workspace.yaml` catalogs through a standalone CLI:
+
+```bash
+catalog move tsdown --to build
+catalog remove tsdown
+catalog remove --catalog build
+catalog rename --from build --to unbuild
+```
+
+- `move` keeps the dependency's version and updates references to its destination. Use `--to default` to move it to the default `catalog`. New catalog names are supported.
+- `remove <dependency>` deletes its catalog entry. If it is in use, confirmation is required before also removing its matching dependency declarations and workspace overrides.
+- `remove --catalog <name>` deletes unused entries, moves referenced entries to the default `catalog`, and updates their references to `catalog:`. A referenced default catalog cannot be removed.
+- `rename` keeps all entries and updates references. `--form` and `-to` are accepted for compatibility with the original command spelling.
+
+Missing arguments are filled through `@clack/prompts`. `catalog remove` first asks whether to remove a dependency or a catalog; `catalog remove --catalog` goes directly to catalog selection. `catalog move` selects a dependency and destination, while `catalog rename` selects the source and asks for a new name. When a dependency exists in several catalogs, select its source catalog.
+
+The CLI finds the workspace from the current directory or `-c, --cwd <dir>` (after the subcommand). It scans the root `package.json` and workspace packages, respecting excluded workspace patterns. References in all four dependency fields and workspace `overrides` are handled. Conflicts with existing destination entries or names abort without writing files, and cancelling a prompt also leaves files unchanged.
+
+Catalog changes do not run an install automatically. Run `pnpm install` afterwards to sync the lockfile.
+
+The catalog regression tests run with `pnpm test` on Node.js 24, using Node's built-in test runner and module mocks for prompt responses.
 
 ### `dev` & `build`
 
