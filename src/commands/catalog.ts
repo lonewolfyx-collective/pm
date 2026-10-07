@@ -73,19 +73,19 @@ createMain(defineCommand({
       ],
     }]
 
-    const overrides = Object.entries(config.monorepo.workspaceConfig.overrides ?? {})
-      .flatMap(([dependency, specifier]) => typeof specifier === 'string' && specifier.startsWith('catalog:')
-        ? [{
-            dependency,
-            field: 'override',
-            catalog: specifier,
-            version: '',
-          }]
-        : [])
-
-    if (overrides.length) {
-      groups.push({ name: 'Workspace references', file: 'pnpm-workspace.yaml (kept)', rows: overrides })
-    }
+    // const overrides = Object.entries(config.monorepo.workspaceConfig.overrides ?? {})
+    //   .flatMap(([dependency, specifier]) => typeof specifier === 'string' && specifier.startsWith('catalog:')
+    //     ? [{
+    //         dependency,
+    //         field: 'override',
+    //         catalog: specifier,
+    //         version: '',
+    //       }]
+    //     : [])
+    //
+    // if (overrides.length) {
+    //   groups.push({ name: 'Workspace references', file: 'pnpm-workspace.yaml (kept)', rows: overrides })
+    // }
 
     const rows = groups.flatMap(group => group.rows)
     const nameWidth = Math.max(...rows.map(row => row.dependency.length))
