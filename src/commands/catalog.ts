@@ -1,9 +1,9 @@
-import { confirm, isCancel, log } from '@clack/prompts'
+import { cancel, confirm, isCancel, log } from '@clack/prompts'
 import { createMain, defineCommand, showUsage } from 'citty'
 import { isMap } from 'yaml'
 import { version } from '../../package.json' with { type: 'json' }
 import { defaultArgs } from '../args/default.ts'
-import { cancelCatalog, readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
+import { readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
 import { resolveConfig } from '../config.ts'
 
 const subCommands = {
@@ -44,37 +44,36 @@ createMain(defineCommand({
 
     const config = await resolveConfig(ctx.args)
     const workspace = await readCatalogWorkspace(config)
-    const unused = workspace.catalogs.map((catalog) => {
-      const references = workspace.references.filter(reference => reference.catalog === catalog.name)
-      const dependencies = catalog.entries.items.map(entry => String(entry.key))
-        .filter(dependency => !references.some(reference => reference.dependency === dependency))
-      return { catalog, dependencies, removeCatalog: references.length === 0 }
-    })
-    const dependencies = unused.flatMap(({ catalog, dependencies }) => dependencies
-      .map(dependency => `${dependency} (${catalog.name}: ${String(catalog.entries.get(dependency))})`))
-    const catalogs = unused.filter(entry => entry.removeCatalog).map(entry => entry.catalog.name)
+    const dependencies = workspace.catalogs.flatMap(catalog => catalog.entries.items
+      .filter(entry => !catalog.used.has(String(entry.key)))
+      .map(entry => `${String(entry.key)} (${catalog.name}: ${String(entry.value)})`))
+    const catalogs = workspace.catalogs.filter(catalog => !catalog.used.size)
     if (!dependencies.length && !catalogs.length) {
       log.info('No unused catalog dependencies or catalogs were found.')
       return
     }
 
     log.info(`Unused catalog dependencies:\n${dependencies.length ? dependencies.join('\n') : '(none)'}`)
-    log.info(`Unused catalogs:\n${catalogs.length ? catalogs.join('\n') : '(none)'}`)
+    log.info(`Unused catalogs:\n${catalogs.length ? catalogs.map(catalog => catalog.name).join('\n') : '(none)'}`)
     const confirmed = await confirm({
       message: 'Delete all listed unused dependencies and catalogs?',
       initialValue: false,
     })
     if (isCancel(confirmed) || !confirmed) {
-      return cancelCatalog()
+      cancel('Catalog management cancelled.')
+      process.exitCode = 1
+      return
     }
 
-    for (const { catalog, dependencies, removeCatalog } of unused) {
-      if (removeCatalog) {
+    for (const catalog of workspace.catalogs) {
+      if (!catalog.used.size) {
         workspace.document.deleteIn(catalog.path)
       }
       else {
-        for (const dependency of dependencies) {
-          workspace.document.deleteIn([...catalog.path, dependency])
+        for (const entry of [...catalog.entries.items]) {
+          if (!catalog.used.has(String(entry.key))) {
+            catalog.entries.delete(entry.key)
+          }
         }
       }
     }

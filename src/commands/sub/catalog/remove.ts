@@ -1,15 +1,8 @@
-import { confirm, isCancel, select } from '@clack/prompts'
+import { cancel, confirm, isCancel, select } from '@clack/prompts'
 import { defineCommand } from 'citty'
+import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
-import {
-  cancelCatalog,
-  chooseCatalog,
-  chooseDependency,
-  moveCatalogDependency,
-  readCatalogWorkspace,
-  saveCatalogWorkspace,
-  updateCatalogReferences,
-} from '../../../catalog/workspace.ts'
+import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
 export default defineCommand({
@@ -31,61 +24,127 @@ export default defineCommand({
     if (config.packages.length > 1 || (config.packages.length && catalogOption)) {
       throw new Error('Specify either one dependency or --catalog, not both.')
     }
-
     const workspace = await readCatalogWorkspace(config)
-    let mode = catalogOption ? 'catalog' : 'dependency'
-    if (!catalogOption && !config.packages.length) {
-      const selected = await select({
-        message: 'What would you like to remove?',
-        options: [
-          { value: 'dependency', label: 'Dependency' },
-          { value: 'catalog', label: 'Catalog' },
-        ],
-      })
-      if (isCancel(selected)) {
-        return cancelCatalog()
-      }
-      mode = selected
+    const mode = catalogOption
+      ? 'catalog'
+      : config.packages.length
+        ? 'dependency'
+        : await select({
+            message: 'What would you like to remove?',
+            options: [
+              { value: 'dependency', label: 'Dependency' },
+              { value: 'catalog', label: 'Catalog' },
+            ],
+          })
+    if (isCancel(mode)) {
+      cancel('Catalog management cancelled.')
+      process.exitCode = 1
+      return
     }
+    const overrides = workspace.document.get('overrides')
 
     if (mode === 'dependency') {
-      const entry = await chooseDependency(workspace, config.packages[0])
-      if (isCancel(entry)) {
-        return cancelCatalog()
+      const name = config.packages[0]
+      const options = workspace.catalogs.flatMap(catalog => catalog.entries.items
+        .map(entry => ({ catalog, dependency: String(entry.key) })))
+        .filter(entry => !name || entry.dependency === name)
+      if (!options.length) {
+        throw new Error(name ? `Dependency "${name}" was not found in any catalog.` : 'No catalog dependencies were found.')
       }
-      const referenced = workspace.references.some(reference => reference.catalog === entry.catalog.name && reference.dependency === entry.dependency)
-      if (referenced) {
+      const entry = name && options.length === 1
+        ? options[0]!
+        : await select({
+            message: 'Select a catalog dependency',
+            options: options.map(entry => ({
+              value: entry,
+              label: `${entry.dependency} (${entry.catalog.name})`,
+              hint: String(entry.catalog.entries.get(entry.dependency)),
+            })),
+          })
+      if (isCancel(entry)) {
+        cancel('Catalog management cancelled.')
+        process.exitCode = 1
+        return
+      }
+      if (entry.catalog.used.has(entry.dependency)) {
         const confirmed = await confirm({
           message: `Remove "${entry.dependency}" from catalog "${entry.catalog.name}" and its package.json / override references?`,
           initialValue: false,
         })
         if (isCancel(confirmed) || !confirmed) {
-          return cancelCatalog()
+          cancel('Catalog management cancelled.')
+          process.exitCode = 1
+          return
         }
-        updateCatalogReferences(workspace, entry.catalog.name, entry.dependency)
       }
       workspace.document.deleteIn([...entry.catalog.path, entry.dependency])
-    }
-    else {
-      const catalog = await chooseCatalog(workspace, ctx.args.catalog)
-      if (isCancel(catalog)) {
-        return cancelCatalog()
-      }
-      const references = workspace.references.filter(reference => reference.catalog === catalog.name)
-      if (catalog.name === 'default' && references.length) {
-        throw new Error('The default catalog is still referenced and cannot be removed.')
-      }
-      for (const reference of references) {
-        if (!catalog.entries.has(reference.dependency)) {
-          throw new Error(`Referenced dependency "${reference.dependency}" is missing from catalog "${catalog.name}".`)
+      for (const { data } of workspace.manifests) {
+        for (const field of dependencyFields) {
+          const dependencies = data[field]
+          if (dependencies && catalogName(dependencies[entry.dependency]) === entry.catalog.name) {
+            delete dependencies[entry.dependency]
+          }
         }
       }
-      for (const dependency of new Set(references.map(reference => reference.dependency))) {
-        moveCatalogDependency(workspace, catalog, dependency, 'default')
+      if (isMap(overrides)) {
+        for (const override of [...overrides.items]) {
+          const selector = String(override.key).split('>').pop()!.trim()
+          if (catalogName(overrides.get(override.key)) === entry.catalog.name
+            && (selector === entry.dependency || selector.startsWith(`${entry.dependency}@`))) {
+            overrides.delete(override.key)
+          }
+        }
+      }
+    }
+    else {
+      if (!workspace.catalogs.length) {
+        throw new Error('No catalogs were found.')
+      }
+      const name = ctx.args.catalog || await select({
+        message: 'Select a catalog',
+        options: workspace.catalogs.map(catalog => ({ value: catalog.name, label: catalog.name })),
+      })
+      if (isCancel(name)) {
+        cancel('Catalog management cancelled.')
+        process.exitCode = 1
+        return
+      }
+      const catalog = workspace.catalogs.find(catalog => catalog.name === name)
+      if (!catalog) {
+        throw new Error(`Catalog "${name}" was not found.`)
+      }
+      if (name === 'default' && catalog.used.size) {
+        throw new Error('The default catalog is still referenced and cannot be removed.')
+      }
+      const target = workspace.catalogs.find(catalog => catalog.name === 'default')?.path ?? ['catalog']
+      for (const dependency of catalog.used) {
+        if (!catalog.entries.has(dependency)) {
+          throw new Error(`Referenced dependency "${dependency}" is missing from catalog "${name}".`)
+        }
+        if (workspace.document.hasIn([...target, dependency])) {
+          throw new Error(`Catalog "default" already contains "${dependency}".`)
+        }
+        workspace.document.setIn([...target, dependency], catalog.entries.get(dependency, true))
       }
       workspace.document.deleteIn(catalog.path)
+      for (const { data } of workspace.manifests) {
+        for (const field of dependencyFields) {
+          const dependencies = data[field]
+          for (const [dependency, specifier] of Object.entries(dependencies ?? {})) {
+            if (catalogName(specifier) === name) {
+              dependencies![dependency] = 'catalog:'
+            }
+          }
+        }
+      }
+      if (isMap(overrides)) {
+        for (const override of overrides.items) {
+          if (catalogName(overrides.get(override.key)) === name) {
+            overrides.set(override.key, 'catalog:')
+          }
+        }
+      }
     }
-
     await saveCatalogWorkspace(workspace)
   },
 })
