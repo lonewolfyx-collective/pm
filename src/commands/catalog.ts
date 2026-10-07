@@ -28,6 +28,7 @@ createMain(defineCommand({
       type: 'boolean',
       description: 'List unused dependencies and catalogs, then confirm removal',
       default: false,
+      alias: 'u',
     },
   },
   subCommands,
