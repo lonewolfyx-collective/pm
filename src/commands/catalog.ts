@@ -1,10 +1,11 @@
 import { cancel, confirm, isCancel, log, note } from '@clack/prompts'
+import { updateWorkspaceManifest } from '@pnpm/workspace.workspace-manifest-writer'
 import { cyan, dim } from 'ansis'
 import { createMain, defineCommand, showUsage } from 'citty'
-import { isMap, isScalar } from 'yaml'
+import { isMap } from 'yaml'
 import { version } from '../../package.json' with { type: 'json' }
 import { defaultArgs } from '../args/default.ts'
-import { readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
+import { readCatalogWorkspace } from '../catalog/workspace.ts'
 import { resolveConfig } from '../config.ts'
 
 const subCommands = {
@@ -73,20 +74,6 @@ createMain(defineCommand({
       ],
     }]
 
-    // const overrides = Object.entries(config.monorepo.workspaceConfig.overrides ?? {})
-    //   .flatMap(([dependency, specifier]) => typeof specifier === 'string' && specifier.startsWith('catalog:')
-    //     ? [{
-    //         dependency,
-    //         field: 'override',
-    //         catalog: specifier,
-    //         version: '',
-    //       }]
-    //     : [])
-    //
-    // if (overrides.length) {
-    //   groups.push({ name: 'Workspace references', file: 'pnpm-workspace.yaml (kept)', rows: overrides })
-    // }
-
     const rows = groups.flatMap(group => group.rows)
     const nameWidth = Math.max(...rows.map(row => row.dependency.length))
     const fieldWidth = Math.max(...rows.map(row => row.field.length))
@@ -134,14 +121,10 @@ createMain(defineCommand({
       workspace.document.delete('catalogs')
     }
 
-    if (isMap(workspace.document.contents)) {
-      for (const entry of workspace.document.contents.items.slice(1)) {
-        if (isScalar(entry.key)) {
-          entry.key.spaceBefore = true
-        }
-      }
-    }
-
-    await saveCatalogWorkspace(workspace)
+    const { catalog, catalogs: namedCatalogs } = workspace.document.toJSON()
+    await updateWorkspaceManifest(config.cwd, {
+      updatedFields: { catalog, catalogs: namedCatalogs },
+    })
+    log.success('Catalogs updated. Run pnpm install to sync the lockfile.')
   },
 }))()
