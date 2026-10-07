@@ -4,7 +4,7 @@ import { createMain, defineCommand, showUsage } from 'citty'
 import { isMap } from 'yaml'
 import { version } from '../../package.json' with { type: 'json' }
 import { defaultArgs } from '../args/default.ts'
-import { catalogName, readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
+import { readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
 import { resolveConfig } from '../config.ts'
 
 const subCommands = {
@@ -75,8 +75,13 @@ createMain(defineCommand({
     }]
 
     const overrides = Object.entries(config.monorepo.workspaceConfig.overrides ?? {})
-      .filter(([, specifier]) => catalogName(specifier) !== undefined)
-      .map(([dependency, specifier]) => ({ dependency, field: 'override', catalog: specifier }))
+      .flatMap(([dependency, specifier]) => typeof specifier === 'string' && specifier.startsWith('catalog:')
+        ? [{
+            dependency,
+            field: 'override',
+            catalog: specifier,
+          }]
+        : [])
 
     if (overrides.length) {
       groups.push({ name: 'Workspace references', file: 'pnpm-workspace.yaml (kept)', rows: overrides })
