@@ -2,7 +2,7 @@ import { cancel, isCancel, select, text } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
-import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
+import { catalogName, dependencyFields, readCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
 export default defineCommand({
@@ -17,11 +17,13 @@ export default defineCommand({
       alias: 'form',
       description: 'Existing catalog name',
       default: '',
+      required: true,
     },
     to: {
       type: 'string',
       description: 'Destination catalog name',
       default: '',
+      required: true,
     },
   },
   async run(ctx) {
@@ -61,10 +63,29 @@ export default defineCommand({
     if (error) {
       throw new Error(error)
     }
-    if (workspace.catalogs.some(catalog => catalog.name === to)) {
-      throw new Error(`Catalog "${to}" already exists.`)
+    if (from === to) {
+      throw new Error('The source and destination catalog names must be different.')
     }
-    workspace.document.setIn(to === 'default' ? ['catalog'] : ['catalogs', to], catalog.entries)
+    const target = workspace.catalogs.find(catalog => catalog.name === to)
+    if (target) {
+      const conflict = catalog.entries.items.find((entry) => {
+        const dependency = String(entry.key)
+        return target.entries.has(dependency)
+          && target.entries.get(dependency) !== catalog.entries.get(dependency)
+      })
+      if (conflict) {
+        throw new Error(`Cannot merge catalogs: dependency "${String(conflict.key)}" has different versions in "${from}" and "${to}".`)
+      }
+      for (const entry of catalog.entries.items) {
+        const dependency = String(entry.key)
+        if (!target.entries.has(dependency)) {
+          target.entries.set(dependency, catalog.entries.get(dependency, true))
+        }
+      }
+    }
+    else {
+      workspace.document.setIn(to === 'default' ? ['catalog'] : ['catalogs', to], catalog.entries)
+    }
     workspace.document.deleteIn(catalog.path)
 
     const specifier = to === 'default' ? 'catalog:' : `catalog:${to}`
@@ -85,6 +106,9 @@ export default defineCommand({
         }
       }
     }
-    await saveCatalogWorkspace(workspace)
+
+    console.log(JSON.stringify(workspace.manifests, null, 2))
+    console.log(workspace.document.toString())
+    // await saveCatalogWorkspace(workspace)
   },
 })
