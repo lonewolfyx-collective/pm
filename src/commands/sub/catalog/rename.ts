@@ -5,6 +5,7 @@ import { defaultArgs } from '../../../args/default.ts'
 import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
+// command: catalog rename --from/-f/-form <from> --to/-t <to>
 export default defineCommand({
   meta: {
     name: 'rename',
@@ -23,6 +24,7 @@ export default defineCommand({
       description: 'Destination catalog name (English letters only)',
       default: '',
       required: true,
+      alias: 't',
     },
   },
   async run(ctx) {

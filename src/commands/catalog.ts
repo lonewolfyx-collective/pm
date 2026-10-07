@@ -15,11 +15,12 @@ const subCommands = {
 
 const spaces = (length: number): string => Array.from({ length }, _ => ` `).join('')
 
+// command: catalog --unUsed/-u
 createMain(defineCommand({
   meta: {
     name: 'catalog',
     version,
-    description: 'Manage pnpm workspace catalogs',
+    description: 'Manage workspace catalogs',
   },
   args: {
     ...defaultArgs,
