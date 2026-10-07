@@ -2,7 +2,7 @@ import { writeFile } from 'node:fs/promises'
 import { cancel, confirm, isCancel, log, note } from '@clack/prompts'
 import { cyan, dim } from 'ansis'
 import { createMain, defineCommand } from 'citty'
-import { isMap } from 'yaml'
+import { isMap, isScalar } from 'yaml'
 import { version } from '../../package.json' with { type: 'json' }
 import { defaultArgs } from '../args/default.ts'
 import { readCatalogWorkspace } from '../catalog/workspace.ts'
@@ -125,6 +125,14 @@ createMain(defineCommand({
     const named = workspace.document.get('catalogs')
     if (isMap(named) && !named.items.length) {
       workspace.document.delete('catalogs')
+    }
+
+    if (isMap(workspace.document.contents)) {
+      for (const entry of workspace.document.contents.items.slice(1)) {
+        if (isScalar(entry.key)) {
+          entry.key.spaceBefore = true
+        }
+      }
     }
 
     await writeFile(workspace.file, workspace.document.toString(), 'utf-8')
