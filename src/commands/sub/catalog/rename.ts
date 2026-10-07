@@ -5,12 +5,6 @@ import { defaultArgs } from '../../../args/default.ts'
 import { catalogName, dependencyFields, readCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
-// const validate = (name: string): boolean => /[^a-z]/i.test(name)
-//   if (!name || /[^a-z]/i.test(name)) {
-//     return 'Catalog names must contain only English letters (A-Z, a-z).'
-//   }
-// }
-
 export default defineCommand({
   meta: {
     name: 'rename',
