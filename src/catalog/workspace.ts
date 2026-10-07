@@ -87,15 +87,12 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<Catal
 export async function saveCatalogWorkspace(workspace: CatalogWorkspace): Promise<void> {
   const updates = []
   for (const manifest of workspace.manifests) {
-    const data = definePackageJSON({
-      ...(await readPackageJSON(manifest.file)),
-      ...manifest.data,
-    })
-    for (const field of dependencyFields) {
-      if (Object.keys(manifest.data[field]).length === 0) {
-        delete data[field]
-      }
-    }
+    const data = definePackageJSON(Object.fromEntries(
+      Object.entries({
+        ...(await readPackageJSON(manifest.file)),
+        ...manifest.data,
+      }).filter(([field, dependencies]) => !Object.hasOwn(manifest.data, field) || Object.keys(dependencies).length > 0),
+    ))
     updates.push({ file: manifest.file, data })
   }
 
@@ -103,5 +100,6 @@ export async function saveCatalogWorkspace(workspace: CatalogWorkspace): Promise
     await writePackageJSON(file, data)
   }
   await writeFile(workspace.file, workspace.document.toString())
+
   log.success('Catalogs updated. Run pnpm install to sync the lockfile.')
 }
