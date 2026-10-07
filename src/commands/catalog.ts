@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 import { cancel, confirm, isCancel, log, note } from '@clack/prompts'
 import { cyan, dim } from 'ansis'
-import { createMain, defineCommand } from 'citty'
+import { createMain, defineCommand, showUsage } from 'citty'
 import { isMap, isScalar } from 'yaml'
 import { version } from '../../package.json' with { type: 'json' }
 import { defaultArgs } from '../args/default.ts'
@@ -38,12 +38,12 @@ createMain(defineCommand({
     }
   },
   async run(ctx) {
-    // if (Object.hasOwn(subCommands, ctx.args.pkg)) {
-    //   return
-    // }
-    // if (!ctx.args.unUsed) {
-    //   return showUsage(ctx.cmd)
-    // }
+    if (Object.hasOwn(subCommands, ctx.args.pkg)) {
+      return
+    }
+    if (!ctx.args.unUsed) {
+      return showUsage(ctx.cmd)
+    }
 
     const config = await resolveConfig(ctx.args)
     const workspace = await readCatalogWorkspace(config)
