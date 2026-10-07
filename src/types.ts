@@ -2,6 +2,7 @@ import type { PnpmWorkspaceSpecification } from '@schemastore/pnpm-workspace'
 import type { ArgsDef, CommandContext, CommandMeta as CommandMetaData } from 'citty'
 import type { DetectResult } from 'package-manager-detector'
 import type { PackageJson } from 'pkg-types'
+import type { Document, YAMLMap } from 'yaml'
 import type { defaultArgs } from './args/default.ts'
 
 export interface ResolveConfig {
@@ -44,6 +45,22 @@ export type PackageManageCommandParameters<T extends ArgsDef = ArgsDef>
 export interface ResolvedCommand {
   command: string
   args: string[]
+}
+
+export interface CatalogWorkspace {
+  file: string
+  document: Document
+  catalogs: {
+    name: string
+    path: string[]
+    entries: YAMLMap
+    used: Set<string>
+  }[]
+  manifests: {
+    file: string
+    original: string
+    data: ResolveConfig['monorepo']['package'][number]['info']
+  }[]
 }
 
 export interface CatalogOption {

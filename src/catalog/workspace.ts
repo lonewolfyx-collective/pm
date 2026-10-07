@@ -1,5 +1,4 @@
-import type { YAMLMap } from 'yaml'
-import type { ResolveConfig } from '../types.ts'
+import type { CatalogWorkspace, ResolveConfig } from '../types.ts'
 import { readFile, writeFile } from 'node:fs/promises'
 import { log } from '@clack/prompts'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
@@ -13,12 +12,7 @@ export function catalogName(specifier: unknown): string | undefined {
   }
 }
 
-export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
-  file: string
-  document: Document
-  catalogs: { name: string, path: string[], entries: YAMLMap, used: Set<string> }[]
-  manifests: { file: string, original: string, data: ResolveConfig['monorepo']['package'][number]['info'] }[]
-}> {
+export async function readCatalogWorkspace(config: ResolveConfig): Promise<CatalogWorkspace> {
   const { file, workspaceConfig, package: projects } = config.monorepo
   if (!file) {
     throw new Error('Could not find pnpm-workspace.yaml.')
@@ -87,7 +81,7 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
   return { file, document, catalogs, manifests }
 }
 
-export async function saveCatalogWorkspace(workspace: Awaited<ReturnType<typeof readCatalogWorkspace>>): Promise<void> {
+export async function saveCatalogWorkspace(workspace: CatalogWorkspace): Promise<void> {
   const updates = []
   for (const manifest of workspace.manifests) {
     if (JSON.stringify(manifest.data) === manifest.original) {
