@@ -1,7 +1,7 @@
 import type { Linter } from 'eslint'
 import antfu from '@antfu/eslint-config'
 
-const config = antfu({
+export default antfu({
   pnpm: true,
   type: 'lib',
   typescript: true,
@@ -12,5 +12,3 @@ const config = antfu({
     'regexp/no-unused-capturing-group': 'off',
   },
 }) as Linter.Config
-
-export default config

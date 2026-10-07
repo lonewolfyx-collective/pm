@@ -139,6 +139,7 @@ runCommand('remove', async (config) => {
     info: {
       dependencies: manifest.dependencies ?? {},
       devDependencies: manifest.devDependencies ?? {},
+      peerDependencies: manifest.peerDependencies ?? {},
       optionalDependencies: manifest.optionalDependencies ?? {},
     },
   }
@@ -209,7 +210,7 @@ runCommand('remove', async (config) => {
     for (const pkg of packages) {
       const fields = dependencyFields.filter(field => Object.hasOwn(project.info[field], pkg))
       const flag = fields.length === 1
-        ? { dependencies: '-P', devDependencies: '-D', optionalDependencies: '-O' }[fields[0]!]
+        ? { dependencies: '-P', devDependencies: '-D', peerDependencies: '--save-peer', optionalDependencies: '-O' }[fields[0]!]
         : ''
       groups.set(flag, [...(groups.get(flag) ?? []), pkg])
     }

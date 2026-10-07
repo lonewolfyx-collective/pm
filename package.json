@@ -16,6 +16,7 @@
   "keywords": [],
   "exports": {
     "./build": "./dist/build.mjs",
+    "./catalog": "./dist/catalog.mjs",
     "./clearn": "./dist/clearn.mjs",
     "./dev": "./dist/dev.mjs",
     "./init": "./dist/init.mjs",
@@ -24,6 +25,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
+    "catalog": "./bin/catalog.mjs",
     "ni": "./bin/ni.mjs",
     "remove": "./bin/remove.mjs",
     "dev": "./bin/dev.mjs",
