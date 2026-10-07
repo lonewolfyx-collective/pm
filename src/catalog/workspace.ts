@@ -1,6 +1,6 @@
 import type { YAMLMap } from 'yaml'
 import type { ResolveConfig } from '../types.ts'
-import { access, readFile, writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { log } from '@clack/prompts'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { Document, isMap, parseDocument } from 'yaml'
@@ -23,7 +23,7 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
   if (!file) {
     throw new Error('Could not find pnpm-workspace.yaml.')
   }
-  await access(file)
+
   const document = new Document(structuredClone(workspaceConfig))
   if (!isMap(document.contents)) {
     throw new Error('pnpm-workspace.yaml must contain a mapping.')
@@ -46,7 +46,6 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
     return { name, path, entries, used: new Set<string>() }
   })
 
-  const overrides = Object.entries(workspaceConfig.overrides ?? {})
   const root = await readPackageJSON(config.cwd)
   const rootProject = {
     file: await resolvePackageJSON(config.cwd),
@@ -59,16 +58,13 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
   }
 
   const manifests = []
-  for (const { file, info } of [rootProject, ...projects.filter(project => project.file !== rootProject.file)]) {
+  for (const { file, info } of [rootProject, ...projects]) {
     const data = structuredClone(info)
     manifests.push({ file, original: JSON.stringify(info), data })
     for (const field of dependencyFields) {
       const dependencies = info[field]
-      if (dependencies == null) {
+      if (!dependencies) {
         continue
-      }
-      if (typeof dependencies !== 'object' || Array.isArray(dependencies)) {
-        throw new TypeError(`Invalid ${field} in ${file}.`)
       }
       for (const [dependency, specifier] of Object.entries(dependencies)) {
         catalogs.find(catalog => catalog.name === catalogName(specifier))?.used.add(dependency)
@@ -76,7 +72,7 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
     }
   }
 
-  for (const [key, specifier] of overrides) {
+  for (const [key, specifier] of Object.entries(workspaceConfig.overrides ?? {})) {
     const catalog = catalogs.find(catalog => catalog.name === catalogName(specifier))
     if (!catalog) {
       continue
