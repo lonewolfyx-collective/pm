@@ -28,23 +28,21 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
   if (!isMap(document.contents)) {
     throw new Error('pnpm-workspace.yaml must contain a mapping.')
   }
-  const names = Object.keys(workspaceConfig.catalogs ?? {})
-  if (Object.hasOwn(workspaceConfig, 'catalog')) {
-    names.unshift('default')
-  }
-  const catalogs = names.map((name) => {
-    const path = name === 'default' && document.has('catalog') ? ['catalog'] : ['catalogs', name]
-    const node = document.getIn(path)
-    if (node != null && !isMap(node)) {
+  const catalogs = [
+    ...(Object.hasOwn(workspaceConfig, 'catalog')
+      ? [{ name: 'default', path: ['catalog'], dependencies: workspaceConfig.catalog }]
+      : []),
+    ...Object.entries(workspaceConfig.catalogs ?? {})
+      .map(([name, dependencies]) => ({ name, path: ['catalogs', name], dependencies })),
+  ].map(({ name, path, dependencies }) => {
+    const entries = document.createNode(dependencies ?? {})
+    if (!isMap(entries)) {
       throw new Error(`Catalog "${name}" must contain a mapping.`)
-    }
-    const entries: YAMLMap = isMap(node) ? node : document.createNode({})
-    if (!isMap(node)) {
-      document.setIn(path, entries)
     }
     if (entries.items.some(entry => typeof entries.get(entry.key) !== 'string')) {
       throw new Error(`Catalog "${name}" must contain dependency version strings.`)
     }
+    document.setIn(path, entries)
     return { name, path, entries, used: new Set<string>() }
   })
 
