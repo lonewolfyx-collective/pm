@@ -96,6 +96,8 @@ catalog --unUsed
 - `rename` keeps all entries and updates references. `--form` and `-to` are accepted for compatibility with the original command spelling.
 - `--unUsed` lists dependencies without references in their catalog and catalogs without any references, including empty catalogs. After one confirmation, it removes all listed entries and catalogs. If there is nothing to remove, it exits without prompting or writing files.
 
+The cleanup preview uses one note to show deletion candidates and references grouped by project. The root is labeled `root`; unnamed projects use their folder name. Reference fields are abbreviated as `prod`, `dev`, `opt` and `peer`. Project references and workspace overrides are shown as kept.
+
 Missing arguments are filled through `@clack/prompts`. `catalog remove` first asks whether to remove a dependency or a catalog; `catalog remove --catalog` goes directly to catalog selection. `catalog move` selects a dependency and destination, while `catalog rename` selects the source and asks for a new name. When a dependency exists in several catalogs, select its source catalog.
 
 The CLI finds the workspace from the current directory or `-c, --cwd <dir>` (after the subcommand). It scans the root `package.json` and workspace packages, respecting excluded workspace patterns. References in all four dependency fields and workspace `overrides` are handled. Conflicts with existing destination entries or names abort without writing files, and cancelling a prompt also leaves files unchanged.
