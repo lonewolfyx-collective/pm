@@ -47,6 +47,11 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
     return { name, path, entries, used: new Set<string>() }
   })
 
+  const overrides = Object.entries(workspaceConfig.overrides ?? {})
+  if (!projects.length && !overrides.length) {
+    return { file, document, catalogs, manifests: [] }
+  }
+
   const manifests = []
   for (const { file, info } of projects) {
     const data = structuredClone(info)
@@ -65,7 +70,7 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
     }
   }
 
-  for (const [key, specifier] of Object.entries(workspaceConfig.overrides ?? {})) {
+  for (const [key, specifier] of overrides) {
     const catalog = catalogs.find(catalog => catalog.name === catalogName(specifier))
     if (!catalog) {
       continue
