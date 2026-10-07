@@ -102,8 +102,6 @@ The CLI finds the workspace from the current directory or `-c, --cwd <dir>` (aft
 
 Catalog changes do not run an install automatically. Run `pnpm install` afterwards to sync the lockfile.
 
-The catalog regression tests run with `pnpm test` on Node.js 24, using Node's built-in test runner and module mocks for prompt responses.
-
 ### `dev` & `build`
 
 Fuzzy-find the script to run — handy when a project grows `dev:docs`, `dev:play` and friends:
