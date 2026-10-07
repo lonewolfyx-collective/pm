@@ -14,7 +14,6 @@ const subCommands = {
   rename: () => import('./sub/catalog/rename.ts').then(r => r.default),
 }
 
-const rawArgs = process.argv.slice(2).map(arg => arg === '-to' ? '--to' : arg)
 const spaces = (length: number): string => Array.from({ length }, _ => ` `).join('')
 
 createMain(defineCommand({
@@ -32,11 +31,6 @@ createMain(defineCommand({
     },
   },
   subCommands,
-  setup(ctx) {
-    if (ctx.args.unUsed && ctx.args._.length) {
-      throw new Error('--unUsed cannot be combined with a subcommand.')
-    }
-  },
   async run(ctx) {
     if (Object.hasOwn(subCommands, ctx.args.pkg)) {
       return
@@ -149,9 +143,4 @@ createMain(defineCommand({
 
     await writeFile(workspace.file, workspace.document.toString(), 'utf-8')
   },
-}))({
-  rawArgs: rawArgs.map((arg, index) => ['--catalog', '--from', '--form', '--to'].includes(arg)
-    && (!rawArgs[index + 1] || rawArgs[index + 1]!.startsWith('-'))
-    ? `${arg}=`
-    : arg),
-})
+}))()
