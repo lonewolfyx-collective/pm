@@ -22,6 +22,7 @@ export default defineCommand({
       type: 'string',
       description: 'Existing catalog name (English letters only)',
       default: '',
+      alias: ['f', 'form'],
     },
     to: {
       type: 'string',
