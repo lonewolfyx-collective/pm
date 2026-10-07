@@ -1,3 +1,4 @@
+import type { Linter } from 'eslint'
 import antfu from '@antfu/eslint-config'
 
 export default antfu({
@@ -10,9 +11,4 @@ export default antfu({
     'antfu/top-level-function': 'off',
     'regexp/no-unused-capturing-group': 'off',
   },
-}, {
-  files: ['tests/**/*.mjs'],
-  rules: {
-    'test/no-import-node-test': 'off',
-  },
-})
+}) as Linter.Config
