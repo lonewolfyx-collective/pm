@@ -15,6 +15,7 @@ const subCommands = {
 }
 
 const rawArgs = process.argv.slice(2).map(arg => arg === '-to' ? '--to' : arg)
+const spaces = (length: number): string => Array.from({ length }, _ => ` `).join('')
 
 createMain(defineCommand({
   meta: {
@@ -99,7 +100,14 @@ createMain(defineCommand({
     note(groups.map(group => [
       `${cyan(group.name)} ${dim(group.file)}`,
       '',
-      ...group.rows.map(row => `  ${row.dependency.padEnd(nameWidth)}  ${dim(row.field.padEnd(fieldWidth))}  ${dim(row.version ? `${row.catalog.padEnd(catalogWidth)}  ${row.version}` : row.catalog)}`),
+      ...group.rows.map(row => [
+        spaces(2),
+        row.dependency.padEnd(nameWidth),
+        spaces(4),
+        dim(row.field.padEnd(fieldWidth)),
+        spaces(4),
+        dim(row.version ? `${row.catalog.padEnd(catalogWidth)}    ${row.version}` : row.catalog),
+      ].join('')),
     ].join('\n')).join('\n\n'), 'Catalog cleanup')
 
     const confirmed = await confirm({
