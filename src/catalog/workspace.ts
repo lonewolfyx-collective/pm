@@ -1,8 +1,8 @@
 import type { CatalogWorkspace, ResolveConfig } from '../types.ts'
-import { readFile, writeFile } from 'node:fs/promises'
+import { writeFile } from 'node:fs/promises'
 import { log } from '@clack/prompts'
-import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
-import { Document, isMap, parseDocument } from 'yaml'
+import { definePackageJSON, readPackageJSON, resolvePackageJSON, writePackageJSON } from 'pkg-types'
+import { Document, isMap } from 'yaml'
 
 export const dependencyFields = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'] as const
 
@@ -51,10 +51,13 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<Catal
     },
   }
 
-  const manifests = []
+  const manifests: CatalogWorkspace['manifests'] = []
   for (const { file, info } of [rootProject, ...projects]) {
-    const data = structuredClone(info)
-    manifests.push({ file, original: JSON.stringify(info), data })
+    manifests.push({
+      file,
+      original: JSON.stringify(info),
+      data: structuredClone(info),
+    })
     for (const field of dependencyFields) {
       const dependencies = info[field]
       if (!dependencies) {
@@ -84,68 +87,21 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<Catal
 export async function saveCatalogWorkspace(workspace: CatalogWorkspace): Promise<void> {
   const updates = []
   for (const manifest of workspace.manifests) {
-    if (JSON.stringify(manifest.data) === manifest.original) {
-      continue
-    }
-    const original = await readFile(manifest.file, 'utf8')
-    const data = JSON.parse(original)
-    const dependencies = JSON.parse(manifest.original)
+    const data = definePackageJSON({
+      ...(await readPackageJSON(manifest.file)),
+      ...manifest.data,
+    })
     for (const field of dependencyFields) {
-      if (JSON.stringify(manifest.data[field]) !== JSON.stringify(dependencies[field])) {
-        data[field] = manifest.data[field]
+      if (Object.keys(manifest.data[field]).length === 0) {
+        delete data[field]
       }
     }
-    const indent = original.match(/\n([\t ]+)"/)?.[1] ?? 2
-    const newline = original.includes('\r\n') ? '\r\n' : '\n'
-    const source = JSON.stringify(data, null, indent).replace(/\n/g, newline)
-      + (original.endsWith('\n') ? newline : '')
-    updates.push({ file: manifest.file, source })
+    updates.push({ file: manifest.file, data })
   }
-  const document = parseDocument(await readFile(workspace.file, 'utf8'))
-  if (document.errors.length) {
-    throw document.errors[0]
+
+  for (const { file, data } of updates) {
+    await writePackageJSON(file, data)
   }
-  const paths = [['catalog'], ['overrides']]
-  const named = workspace.document.get('catalogs')
-  if (!workspace.document.has('catalogs')) {
-    document.delete('catalogs')
-  }
-  else if (isMap(named)) {
-    const original = document.get('catalogs')
-    const names = new Set([
-      ...(isMap(original) ? original.items.map(entry => String(entry.key)) : []),
-      ...named.items.map(entry => String(entry.key)),
-    ])
-    if (!isMap(original)) {
-      document.set('catalogs', document.createNode({}))
-    }
-    paths.push(...[...names].map(name => ['catalogs', name]))
-  }
-  for (const path of paths) {
-    if (!workspace.document.hasIn(path)) {
-      document.deleteIn(path)
-      continue
-    }
-    const entries = workspace.document.getIn(path)
-    const original = document.getIn(path)
-    if (!isMap(entries) || !isMap(original)) {
-      document.setIn(path, entries)
-      continue
-    }
-    for (const entry of [...original.items]) {
-      if (!entries.has(entry.key)) {
-        original.delete(entry.key)
-      }
-    }
-    for (const entry of entries.items) {
-      if (original.get(entry.key) !== entries.get(entry.key)) {
-        original.set(entry.key, entries.get(entry.key, true))
-      }
-    }
-  }
-  updates.push({ file: workspace.file, source: document.toString() })
-  for (const update of updates) {
-    await writeFile(update.file, update.source)
-  }
+  await writeFile(workspace.file, workspace.document.toString())
   log.success('Catalogs updated. Run pnpm install to sync the lockfile.')
 }
