@@ -1,10 +1,11 @@
+import { writeFile } from 'node:fs/promises'
 import { cancel, confirm, isCancel, log, note } from '@clack/prompts'
 import { cyan, dim } from 'ansis'
-import { createMain, defineCommand, showUsage } from 'citty'
+import { createMain, defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { version } from '../../package.json' with { type: 'json' }
 import { defaultArgs } from '../args/default.ts'
-import { readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
+import { readCatalogWorkspace } from '../catalog/workspace.ts'
 import { resolveConfig } from '../config.ts'
 
 const subCommands = {
@@ -36,12 +37,12 @@ createMain(defineCommand({
     }
   },
   async run(ctx) {
-    if (Object.hasOwn(subCommands, ctx.args.pkg)) {
-      return
-    }
-    if (!ctx.args.unUsed) {
-      return showUsage(ctx.cmd)
-    }
+    // if (Object.hasOwn(subCommands, ctx.args.pkg)) {
+    //   return
+    // }
+    // if (!ctx.args.unUsed) {
+    //   return showUsage(ctx.cmd)
+    // }
 
     const config = await resolveConfig(ctx.args)
     const workspace = await readCatalogWorkspace(config)
@@ -125,7 +126,8 @@ createMain(defineCommand({
     if (isMap(named) && !named.items.length) {
       workspace.document.delete('catalogs')
     }
-    await saveCatalogWorkspace(workspace)
+
+    await writeFile(workspace.file, workspace.document.toString(), 'utf-8')
   },
 }))({
   rawArgs: rawArgs.map((arg, index) => ['--catalog', '--from', '--form', '--to'].includes(arg)
