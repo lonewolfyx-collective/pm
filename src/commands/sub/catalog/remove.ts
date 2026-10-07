@@ -22,10 +22,8 @@ export default defineCommand({
   async run(ctx) {
     const config = await resolveConfig(ctx.args)
     const workspace = await readCatalogWorkspace(config)
-    console.log(workspace.catalogs)
 
     const catalogs = workspace.catalogs.filter(catalog => catalog.name !== 'default')
-    console.log(JSON.stringify(workspace, null, 2))
 
     if (!catalogs.length) {
       throw new Error('No named catalogs were found.')
