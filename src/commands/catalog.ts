@@ -1,11 +1,10 @@
-import { basename, dirname, join } from 'node:path'
 import { cancel, confirm, isCancel, log, note } from '@clack/prompts'
 import { cyan, dim } from 'ansis'
 import { createMain, defineCommand, showUsage } from 'citty'
 import { isMap } from 'yaml'
 import { version } from '../../package.json' with { type: 'json' }
 import { defaultArgs } from '../args/default.ts'
-import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
+import { catalogName, readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
 import { resolveConfig } from '../config.ts'
 
 const subCommands = {
@@ -46,6 +45,7 @@ createMain(defineCommand({
 
     const config = await resolveConfig(ctx.args)
     const workspace = await readCatalogWorkspace(config)
+
     const dependencies = workspace.catalogs.flatMap(catalog => catalog.entries.items
       .filter(entry => !catalog.used.has(String(entry.key)))
       .map(entry => ({
@@ -53,7 +53,9 @@ createMain(defineCommand({
         field: 'unused',
         catalog: `${catalog.path.join(':')}${catalog.path.length === 1 ? ':' : ''} ${String(catalog.entries.get(entry.key))}`,
       })))
+
     const catalogs = workspace.catalogs.filter(catalog => !catalog.used.size)
+
     if (!dependencies.length && !catalogs.length) {
       log.info('No unused catalog dependencies or catalogs were found.')
       return
@@ -71,38 +73,30 @@ createMain(defineCommand({
         })),
       ],
     }]
-    const fields = { dependencies: 'prod', devDependencies: 'dev', optionalDependencies: 'opt', peerDependencies: 'peer' }
-    for (const manifest of workspace.manifests) {
-      const rows = dependencyFields.flatMap(field => Object.entries(manifest.data[field])
-        .filter(([, specifier]) => catalogName(specifier) !== undefined)
-        .map(([dependency, specifier]) => ({ dependency, field: fields[field], catalog: specifier })))
-      if (!rows.length) {
-        continue
-      }
-      const name = manifest.file === join(dirname(workspace.file), 'package.json')
-        ? 'root'
-        : config.monorepo.package.find(project => project.file === manifest.file)?.name?.trim()
-          || basename(dirname(manifest.file))
-      groups.push({ name, file: 'package.json (kept)', rows })
-    }
+
     const overrides = Object.entries(config.monorepo.workspaceConfig.overrides ?? {})
       .filter(([, specifier]) => catalogName(specifier) !== undefined)
       .map(([dependency, specifier]) => ({ dependency, field: 'override', catalog: specifier }))
+
     if (overrides.length) {
       groups.push({ name: 'Workspace references', file: 'pnpm-workspace.yaml (kept)', rows: overrides })
     }
+
     const rows = groups.flatMap(group => group.rows)
     const nameWidth = Math.max(...rows.map(row => row.dependency.length))
     const fieldWidth = Math.max(...rows.map(row => row.field.length))
+
     note(groups.map(group => [
       `${cyan(group.name)} ${dim(group.file)}`,
       '',
       ...group.rows.map(row => `  ${row.dependency.padEnd(nameWidth)}  ${dim(row.field.padEnd(fieldWidth))}  ${dim(row.catalog)}`),
     ].join('\n')).join('\n\n'), 'Catalog cleanup')
+
     const confirmed = await confirm({
       message: 'Delete the entries listed under "Will be deleted"?',
       initialValue: false,
     })
+
     if (isCancel(confirmed) || !confirmed) {
       cancel('Catalog management cancelled.')
       process.exitCode = 1
@@ -121,6 +115,7 @@ createMain(defineCommand({
         }
       }
     }
+
     const named = workspace.document.get('catalogs')
     if (isMap(named) && !named.items.length) {
       workspace.document.delete('catalogs')
