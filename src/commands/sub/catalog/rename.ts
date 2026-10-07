@@ -1,9 +1,14 @@
-import { cancel, isCancel, select, text } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
 import { catalogName, dependencyFields, readCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
+
+// const validate = (name: string): boolean => /[^a-z]/i.test(name)
+//   if (!name || /[^a-z]/i.test(name)) {
+//     return 'Catalog names must contain only English letters (A-Z, a-z).'
+//   }
+// }
 
 export default defineCommand({
   meta: {
@@ -14,58 +19,58 @@ export default defineCommand({
     ...defaultArgs,
     from: {
       type: 'string',
-      alias: 'form',
-      description: 'Existing catalog name',
+      description: 'Existing catalog name (English letters only)',
       default: '',
       required: true,
     },
     to: {
       type: 'string',
-      description: 'Destination catalog name',
+      description: 'Destination catalog name (English letters only)',
       default: '',
       required: true,
     },
   },
   async run(ctx) {
+    // console.log(validate(ctx.args.from))
+    // if (!validate(ctx.args.from) || !validate(ctx.args.to)) {
+    //   throw new Error('Catalog names must contain only English letters (A-Z, a-z).')
+    // }
+
     const config = await resolveConfig(ctx.args)
-    if (config.packages.length) {
-      throw new Error('Use --from and --to to specify catalog names.')
-    }
     const workspace = await readCatalogWorkspace(config)
     if (!workspace.catalogs.length) {
       throw new Error('No catalogs were found.')
     }
-    const from = ctx.args.from || await select({
-      message: 'Select a catalog',
-      options: workspace.catalogs.map(catalog => ({ value: catalog.name, label: catalog.name })),
-    })
-    if (isCancel(from)) {
-      cancel('Catalog management cancelled.')
-      process.exitCode = 1
-      return
-    }
+
+    const from = ctx.args.from
+    // const from = ctx.args.from || await select({
+    //   message: 'Select a catalog',
+    //   options: workspace.catalogs.map(catalog => ({ value: catalog.name, label: catalog.name })),
+    // })
+    // if (isCancel(from)) {
+    //   cancel('Catalog management cancelled.')
+    //   process.exit(1)
+    // }
+
     const catalog = workspace.catalogs.find(catalog => catalog.name === from)
     if (!catalog) {
       throw new Error(`Catalog "${from}" was not found.`)
     }
-    const validate = (name: string | undefined): string | undefined => {
-      if (!/^[a-z0-9][\w.-]*$/i.test(name ?? '')) {
-        return 'Use letters, digits, dots, underscores or hyphens, starting with a letter or digit.'
-      }
-    }
-    const to = ctx.args.to || await text({ message: 'Enter the new catalog name', validate })
-    if (isCancel(to)) {
-      cancel('Catalog management cancelled.')
-      process.exitCode = 1
-      return
-    }
-    const error = validate(to)
-    if (error) {
-      throw new Error(error)
-    }
-    if (from === to) {
-      throw new Error('The source and destination catalog names must be different.')
-    }
+
+    const to = ctx.args.to
+    // const to = ctx.args.to || await text({ message: 'Enter the new catalog name', validate })
+    // if (isCancel(to)) {
+    //   cancel('Catalog management cancelled.')
+    //   process.exitCode = 1
+    //   return
+    // }
+    // const error = validate(to)
+    // if (error) {
+    //   throw new Error(error)
+    // }
+    // if (from === to) {
+    //   throw new Error('The source and destination catalog names must be different.')
+    // }
     const target = workspace.catalogs.find(catalog => catalog.name === to)
     if (target) {
       const conflict = catalog.entries.items.find((entry) => {
