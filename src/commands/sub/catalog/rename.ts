@@ -1,4 +1,4 @@
-import { cancel, isCancel, select } from '@clack/prompts'
+import { cancel, isCancel, select, text } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
@@ -32,11 +32,6 @@ export default defineCommand({
     },
   },
   async run(ctx) {
-    // console.log(validate(ctx.args.from))
-    // if (!validate(ctx.args.from) || !validate(ctx.args.to)) {
-    //   throw new Error('Catalog names must contain only English letters (A-Z, a-z).')
-    // }
-
     const config = await resolveConfig(ctx.args)
     const workspace = await readCatalogWorkspace(config)
     const catalogs = workspace.catalogs.filter(catalog => catalog.name !== 'default')
@@ -58,20 +53,14 @@ export default defineCommand({
       throw new Error(`Catalog "${from}" was not found.`)
     }
 
-    const to = ctx.args.to
-    // const to = ctx.args.to || await text({ message: 'Enter the new catalog name', validate })
-    // if (isCancel(to)) {
-    //   cancel('Catalog management cancelled.')
-    //   process.exitCode = 1
-    //   return
-    // }
-    // const error = validate(to)
-    // if (error) {
-    //   throw new Error(error)
-    // }
-    // if (from === to) {
-    //   throw new Error('The source and destination catalog names must be different.')
-    // }
+    const to = ctx.args.to || await text({
+      message: 'Enter the new catalog name',
+    })
+    if (isCancel(to)) {
+      cancel('Catalog management cancelled.')
+      process.exit(1)
+    }
+
     const target = workspace.catalogs.find(catalog => catalog.name === to)
     if (target) {
       const conflict = catalog.entries.items.find((entry) => {
