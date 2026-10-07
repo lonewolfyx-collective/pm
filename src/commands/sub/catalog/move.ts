@@ -49,7 +49,7 @@ export default defineCommand({
       const overrideKeys = isMap(overrides)
         ? overrides.items.filter((override) => {
             const selector = String(override.key).split('>').pop()!.trim()
-            return catalogName(overrides.get(override.key)) !== undefined
+            return catalogName(overrides.get(override.key) as string) !== undefined
               && (selector === dependency || selector.startsWith(`${dependency}@`))
           }).map(override => override.key)
         : []
@@ -92,14 +92,14 @@ export default defineCommand({
           ? reference.value
           : workspace.catalogs.find(catalog => catalog.name === from)?.entries.get(dependency))
 
-      if (catalogName(version) !== undefined) {
+      if (catalogName(version as string) !== undefined) {
         throw new Error(`Could not resolve a version for "${dependency}" from "${reference.value}".`)
       }
 
       const sources = new Set(references.map(reference => catalogName(reference.value)))
       if (isMap(overrides)) {
         for (const key of overrideKeys) {
-          sources.add(catalogName(overrides.get(key)))
+          sources.add(catalogName(overrides.get(key) as string))
         }
       }
 

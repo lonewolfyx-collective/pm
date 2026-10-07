@@ -92,7 +92,7 @@ export default defineCommand({
     const overrides = workspace.document.get('overrides')
     if (isMap(overrides)) {
       for (const override of overrides.items) {
-        if (catalogName(overrides.get(override.key)) === from) {
+        if (catalogName(overrides.get(override.key) as string) === from) {
           overrides.set(override.key, specifier)
         }
       }
