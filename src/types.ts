@@ -19,7 +19,7 @@ export interface ResolveConfig {
     package: {
       name: string
       file: string
-      info: Required<Pick<PackageJson, 'dependencies' | 'devDependencies' | 'optionalDependencies'>>
+      info: Required<Pick<PackageJson, 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies'>>
     }[]
   }
 }
