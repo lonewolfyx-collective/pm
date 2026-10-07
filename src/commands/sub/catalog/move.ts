@@ -1,110 +1,128 @@
-import { cancel, isCancel, select, text } from '@clack/prompts'
+import { cancel, isCancel } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
+import { selectCatalog } from '../../../catalog/prompts.ts'
+import { catalogOptions } from '../../../catalog/rules.ts'
+import { resolveCatalogName } from '../../../catalog/utils.ts'
 import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
+// command: catalog move <pkg...> --to/-to <catalog>
 export default defineCommand({
   meta: {
     name: 'move',
-    description: 'Move a package in the catalog',
+    description: 'Move dependencies and their workspace references to catalogs',
   },
   args: {
     ...defaultArgs,
     to: {
       type: 'string',
-      description: 'Destination catalog name',
+      description: 'Destination catalog name (omit to use catalog rules)',
       default: '',
+      alias: 't',
     },
   },
   async run(ctx) {
     const config = await resolveConfig(ctx.args)
-    if (config.packages.length > 1) {
-      throw new Error('Specify one dependency at a time.')
-    }
     const workspace = await readCatalogWorkspace(config)
-    const name = config.packages[0]
-    const options = workspace.catalogs.flatMap(catalog => catalog.entries.items
-      .map(entry => ({ catalog, dependency: String(entry.key) })))
-      .filter(entry => !name || entry.dependency === name)
-    if (!options.length) {
-      throw new Error(name ? `Dependency "${name}" was not found in any catalog.` : 'No catalog dependencies were found.')
+    if (!config.packages.length) {
+      throw new Error('Specify at least one dependency to move.')
     }
-    const entry = name && options.length === 1
-      ? options[0]!
-      : await select({
-          message: 'Select a catalog dependency',
-          options: options.map(entry => ({
-            value: entry,
-            label: `${entry.dependency} (${entry.catalog.name})`,
-            hint: String(entry.catalog.entries.get(entry.dependency)),
-          })),
-        })
-    if (isCancel(entry)) {
-      cancel('Catalog management cancelled.')
-      process.exitCode = 1
-      return
-    }
-    const destination = ctx.args.to || await select({
-      message: 'Select the destination catalog',
-      options: [
-        ...[...new Set(['default', ...workspace.catalogs.map(catalog => catalog.name)])]
-          .filter(name => name !== entry.catalog.name)
-          .map(name => ({ value: name, label: name })),
-        { value: '', label: 'New catalog' },
-      ],
-    })
-    if (isCancel(destination)) {
-      cancel('Catalog management cancelled.')
-      process.exitCode = 1
-      return
-    }
-    const validate = (name: string | undefined): string | undefined => {
-      if (!/^[a-z0-9][\w.-]*$/i.test(name ?? '')) {
-        return 'Use letters, digits, dots, underscores or hyphens, starting with a letter or digit.'
-      }
-    }
-    const to = destination || await text({ message: 'Enter the destination catalog name', validate })
-    if (isCancel(to)) {
-      cancel('Catalog management cancelled.')
-      process.exitCode = 1
-      return
-    }
-    const error = validate(to)
-    if (error) {
-      throw new Error(error)
-    }
-    if (to === entry.catalog.name) {
-      throw new Error('The dependency is already in the destination catalog.')
-    }
-    const path = workspace.catalogs.find(catalog => catalog.name === to)?.path
-      ?? (to === 'default' ? ['catalog'] : ['catalogs', to])
-    if (workspace.document.hasIn([...path, entry.dependency])) {
-      throw new Error(`Catalog "${to}" already contains "${entry.dependency}".`)
-    }
-    workspace.document.setIn([...path, entry.dependency], entry.catalog.entries.get(entry.dependency, true))
-    workspace.document.deleteIn([...entry.catalog.path, entry.dependency])
 
-    const specifier = to === 'default' ? 'catalog:' : `catalog:${to}`
-    for (const { data } of workspace.manifests) {
-      for (const field of dependencyFields) {
-        const dependencies = data[field]
-        if (dependencies && catalogName(dependencies[entry.dependency]) === entry.catalog.name) {
-          dependencies[entry.dependency] = specifier
-        }
-      }
-    }
     const overrides = workspace.document.get('overrides')
-    if (isMap(overrides)) {
-      for (const override of overrides.items) {
-        const selector = String(override.key).split('>').pop()!.trim()
-        if (catalogName(overrides.get(override.key)) === entry.catalog.name
-          && (selector === entry.dependency || selector.startsWith(`${entry.dependency}@`))) {
-          overrides.set(override.key, specifier)
+    for (const dependency of config.packages) {
+      const references = workspace.manifests.flatMap(({ data }) => dependencyFields.flatMap((field) => {
+        const dependencies = data[field]
+        return Object.hasOwn(dependencies, dependency)
+          ? [{
+              dependencies,
+              value: dependencies[dependency]!,
+            }]
+          : []
+      }))
+
+      if (!references.length) {
+        throw new Error(`Dependency "${dependency}" was not found in any package.json.`)
+      }
+
+      const overrideKeys = isMap(overrides)
+        ? overrides.items.filter((override) => {
+            const selector = String(override.key).split('>').pop()!.trim()
+            return catalogName(overrides.get(override.key)) !== undefined
+              && (selector === dependency || selector.startsWith(`${dependency}@`))
+          }).map(override => override.key)
+        : []
+
+      const to = ctx.args.to || resolveCatalogName(dependency) || await selectCatalog(
+        `Select the destination catalog for ${dependency}`,
+        [
+          {
+            value: 'default',
+            label: 'default',
+          },
+          ...catalogOptions,
+          ...(workspace.catalogs.filter(catalog => catalog.name !== 'default'
+            && !catalogOptions.some(option => option.value === catalog.name))
+            .map(catalog => ({
+              value: catalog.name,
+              label: catalog.name,
+            }))),
+        ],
+      )
+
+      if (isCancel(to)) {
+        cancel('Catalog management cancelled.')
+        process.exitCode = 1
+        return
+      }
+
+      if (!/^[a-z0-9][\w.-]*$/i.test(to)) {
+        throw new Error('Use letters, digits, dots, underscores or hyphens, starting with a letter or digit.')
+      }
+
+      const path = workspace.catalogs.find(catalog => catalog.name === to)?.path
+        ?? (to === 'default' ? ['catalog'] : ['catalogs', to])
+
+      // The current project's manifest comes first, followed by workspace projects.
+      const reference = references[0]!
+      const from = catalogName(reference.value)
+      const version = workspace.document.getIn([...path, dependency])
+        ?? (!from
+          ? reference.value
+          : workspace.catalogs.find(catalog => catalog.name === from)?.entries.get(dependency))
+
+      if (catalogName(version) !== undefined) {
+        throw new Error(`Could not resolve a version for "${dependency}" from "${reference.value}".`)
+      }
+
+      const sources = new Set(references.map(reference => catalogName(reference.value)))
+      if (isMap(overrides)) {
+        for (const key of overrideKeys) {
+          sources.add(catalogName(overrides.get(key)))
+        }
+      }
+
+      workspace.document.setIn([...path, dependency], version)
+
+      for (const catalog of workspace.catalogs) {
+        if (catalog.name !== to && sources.has(catalog.name)) {
+          workspace.document.deleteIn([...catalog.path, dependency])
+        }
+      }
+
+      const specifier = to === 'default' ? 'catalog:' : `catalog:${to}`
+      for (const reference of references) {
+        reference.dependencies[dependency] = specifier
+      }
+
+      if (isMap(overrides)) {
+        for (const key of overrideKeys) {
+          overrides.set(key, specifier)
         }
       }
     }
+
     await saveCatalogWorkspace(workspace)
   },
 })
