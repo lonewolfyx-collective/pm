@@ -2,7 +2,7 @@ import { cancel, isCancel, select } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
-import { dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
+import { dependencyFields, readCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
 // command: catalog remove --catalog
@@ -62,48 +62,42 @@ export default defineCommand({
     }
 
     if (destination === 'default') {
-      for (const entry of catalog.entries.items) {
-        const dependency = String(entry.key)
-        const path = ['catalog', dependency]
-        if (workspace.document.hasIn(path)
-          && workspace.document.getIn(path) !== catalog.entries.get(dependency)) {
-          throw new Error(`Catalog "default" already contains a different version of "${dependency}".`)
+      for (const { key, value } of catalog.entries.items) {
+        const path = ['catalog', String(key)]
+        const existing = workspace.document.getIn(path)
+        if (existing !== undefined && existing !== catalog.entries.get(key)) {
+          throw new Error(`Catalog "default" already contains a different version of "${String(key)}".`)
         }
-        workspace.document.setIn(path, catalog.entries.get(dependency, true))
+        workspace.document.setIn(path, value)
       }
     }
+
+    const resolveSpecifier = (dependency: string): string =>
+      destination === 'default' ? 'catalog:' : catalog.entries.get(dependency) as string
 
     for (const { data } of workspace.manifests) {
       for (const field of dependencyFields) {
         for (const [dependency, specifier] of Object.entries(data[field])) {
-          if (specifier !== `catalog:${name}`) {
-            continue
+          if (specifier === `catalog:${name}`) {
+            data[field][dependency] = resolveSpecifier(dependency)
           }
-          data[field][dependency] = destination === 'default' ? 'catalog:' : catalog.entries.get(dependency) as string
         }
       }
     }
 
     const overrides = workspace.document.get('overrides')
     if (isMap(overrides)) {
-      for (const override of overrides.items) {
-        if (overrides.get(override.key) !== `catalog:${name}`) {
-          continue
+      for (const { key } of overrides.items) {
+        if (overrides.get(key) === `catalog:${name}`) {
+          const dependency = String(key).split('>').pop()!.trim().replace(/(?!^)@.*$/, '')
+          overrides.set(key, resolveSpecifier(dependency))
         }
-        const selector = String(override.key).split('>').pop()!.trim()
-        const dependency = catalog.entries.items.map(entry => String(entry.key))
-          .find(dependency => selector === dependency || selector.startsWith(`${dependency}@`))
-        const version = dependency && catalog.entries.get(dependency)
-        if (typeof version !== 'string') {
-          throw new TypeError(`Override "${String(override.key)}" references a dependency missing from catalog "${name}".`)
-        }
-        overrides.set(override.key, destination === 'default' ? 'catalog:' : version)
       }
     }
     workspace.document.deleteIn(catalog.path)
 
     console.log(JSON.stringify(workspace, null, 2))
 
-    await saveCatalogWorkspace(workspace)
+    // await saveCatalogWorkspace(workspace)
   },
 })
