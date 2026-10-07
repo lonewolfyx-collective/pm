@@ -6,10 +6,8 @@ import { Document, isMap } from 'yaml'
 
 export const dependencyFields = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'] as const
 
-export function catalogName(specifier: unknown): string | undefined {
-  if (typeof specifier === 'string' && specifier.startsWith('catalog:')) {
-    return specifier.slice('catalog:'.length) || 'default'
-  }
+export function catalogName(specifier: string): string | undefined {
+  return specifier.startsWith('catalog:') ? specifier.slice('catalog:'.length) || 'default' : undefined
 }
 
 export async function readCatalogWorkspace(config: ResolveConfig): Promise<CatalogWorkspace> {
@@ -69,7 +67,7 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<Catal
     }
   }
 
-  for (const [key, specifier] of Object.entries(workspaceConfig.overrides ?? {})) {
+  for (const [key, specifier] of Object.entries((workspaceConfig.overrides ?? {}) as Record<string, string>)) {
     const catalog = catalogs.find(catalog => catalog.name === catalogName(specifier))
     if (!catalog) {
       continue

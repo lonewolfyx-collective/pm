@@ -5,16 +5,13 @@ import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { isMap, parseDocument } from 'yaml'
+import { catalogName } from '../catalog/workspace.ts'
 import { executeCommand, runCommand } from '../run.ts'
 
 type Project = ResolveConfig['monorepo']['package'][number]
 
 const dependencyFields = ['dependencies', 'devDependencies', 'optionalDependencies'] as const
 const referenceFields = [...dependencyFields, 'peerDependencies'] as const
-
-function catalogName(specifier: string | undefined): string | undefined {
-  return specifier?.startsWith('catalog:') ? specifier.slice('catalog:'.length) || 'default' : undefined
-}
 
 export async function cleanCatalogs(
   config: ResolveConfig,
@@ -38,7 +35,7 @@ export async function cleanCatalogs(
     removals.set(project.file, packages)
     for (const pkg of packages) {
       for (const field of dependencyFields.filter(field => Object.hasOwn(project.info[field], pkg))) {
-        const name = catalogName(project.info[field][pkg])
+        const name = catalogName(project.info[field][pkg]!)
         if (name !== undefined) {
           const entries = catalogs.get(name) ?? new Set<string>()
           entries.add(pkg)
@@ -169,7 +166,7 @@ runCommand('remove', async (config) => {
             const fields = dependencyFields.filter(field => Object.hasOwn(project.info[field], pkg))
 
             const declarations = fields.map((field) => {
-              const specifier = project.info[field][pkg]
+              const specifier = project.info[field][pkg]!
               const name = catalogName(specifier)
 
               // | 依赖声明 | 查找位置 |
