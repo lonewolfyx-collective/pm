@@ -39,43 +39,38 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
   const excludes = patterns.filter(pattern => pattern.startsWith('!')).map(pattern => posix.normalize(pattern.slice(1)))
   const ignore = ['**/node_modules/**', '**/.git/**', ...excludes.flatMap(pattern => [pattern, posix.join(pattern, '**')])]
   const workspaceRoot = dirname(workspaceFile)
-
-  const matches = await Promise.all(includes.map(async (pattern) => {
-    const files = await glob(posix.join(pattern, 'package.json'), {
-      cwd: workspaceRoot,
-      absolute: true,
-      nodir: true,
-      ignore,
-    })
+  const files = includes.length
+    ? await glob(includes.map(pattern => posix.join(pattern, 'package.json')), {
+        cwd: workspaceRoot,
+        absolute: true,
+        nodir: true,
+        ignore,
+      })
+    : []
+  const labels = includes.flatMap((pattern) => {
     const segments = pattern.split('/')
     const wildcardIndex = segments.findIndex(segment => hasMagic(segment, { magicalBraces: true }))
-    return {
-      files,
-      label: wildcardIndex === -1 ? undefined : segments.slice(0, wildcardIndex).join('/') || '.',
-    }
-  }))
-  const groups = new Map<string, ResolveConfig['monorepo']['workspace'][number]>()
+    return wildcardIndex === -1 ? [] : [segments.slice(0, wildcardIndex).join('/') || '.']
+  })
 
-  for (const { label } of matches) {
-    if (label === undefined) {
+  const groups = new Map<string, ResolveConfig['monorepo']['workspace'][number]>()
+  for (const label of labels) {
+    const path = resolve(workspaceRoot, label)
+    if (groups.has(path)) {
       continue
     }
-
-    const path = resolve(workspaceRoot, label)
     const directories = await glob(`${label}/`, {
       cwd: workspaceRoot,
       absolute: true,
       ignore,
     })
 
-    if (directories.length && !groups.has(path)) {
+    if (directories.length) {
       groups.set(path, { label: label === '.' ? 'root' : label, path })
     }
   }
 
   monorepo.workspace = [...groups.values()]
-  const files = matches.flatMap(match => match.files)
-
   monorepo.package = await Promise.all([...new Set(files)].sort().map(async (file) => {
     const pkg = await readPackageJSON(file)
     return {
