@@ -2,6 +2,7 @@ import type { YAMLMap } from 'yaml'
 import type { ResolveConfig } from '../types.ts'
 import { access, readFile, writeFile } from 'node:fs/promises'
 import { log } from '@clack/prompts'
+import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { Document, isMap, parseDocument } from 'yaml'
 
 export const dependencyFields = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'] as const
@@ -48,12 +49,19 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<{
   })
 
   const overrides = Object.entries(workspaceConfig.overrides ?? {})
-  if (!projects.length && !overrides.length) {
-    return { file, document, catalogs, manifests: [] }
+  const root = await readPackageJSON(config.cwd)
+  const rootProject = {
+    file: await resolvePackageJSON(config.cwd),
+    info: {
+      dependencies: root.dependencies ?? {},
+      devDependencies: root.devDependencies ?? {},
+      optionalDependencies: root.optionalDependencies ?? {},
+      peerDependencies: root.peerDependencies ?? {},
+    },
   }
 
   const manifests = []
-  for (const { file, info } of projects) {
+  for (const { file, info } of [rootProject, ...projects.filter(project => project.file !== rootProject.file)]) {
     const data = structuredClone(info)
     manifests.push({ file, original: JSON.stringify(info), data })
     for (const field of dependencyFields) {
