@@ -52,7 +52,8 @@ createMain(defineCommand({
       .map(entry => ({
         dependency: String(entry.key),
         field: 'unused',
-        catalog: `${catalog.path.join(':')}${catalog.path.length === 1 ? ':' : ''} ${String(catalog.entries.get(entry.key))}`,
+        catalog: `${catalog.path.join(':')}${catalog.path.length === 1 ? ':' : ''}`,
+        version: String(catalog.entries.get(entry.key)),
       })))
 
     const catalogs = workspace.catalogs.filter(catalog => !catalog.used.size)
@@ -71,6 +72,7 @@ createMain(defineCommand({
           dependency: catalog.name,
           field: 'catalog',
           catalog: `${catalog.path.join(':')}${catalog.path.length === 1 ? ':' : ''}`,
+          version: '',
         })),
       ],
     }]
@@ -81,6 +83,7 @@ createMain(defineCommand({
             dependency,
             field: 'override',
             catalog: specifier,
+            version: '',
           }]
         : [])
 
@@ -91,11 +94,12 @@ createMain(defineCommand({
     const rows = groups.flatMap(group => group.rows)
     const nameWidth = Math.max(...rows.map(row => row.dependency.length))
     const fieldWidth = Math.max(...rows.map(row => row.field.length))
+    const catalogWidth = Math.max(...rows.map(row => row.catalog.length))
 
     note(groups.map(group => [
       `${cyan(group.name)} ${dim(group.file)}`,
       '',
-      ...group.rows.map(row => `  ${row.dependency.padEnd(nameWidth)}  ${dim(row.field.padEnd(fieldWidth))}  ${dim(row.catalog)}`),
+      ...group.rows.map(row => `  ${row.dependency.padEnd(nameWidth)}  ${dim(row.field.padEnd(fieldWidth))}  ${dim(row.version ? `${row.catalog.padEnd(catalogWidth)}  ${row.version}` : row.catalog)}`),
     ].join('\n')).join('\n\n'), 'Catalog cleanup')
 
     const confirmed = await confirm({
