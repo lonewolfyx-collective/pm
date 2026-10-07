@@ -1,3 +1,4 @@
+import { cancel, isCancel, select } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
@@ -21,7 +22,6 @@ export default defineCommand({
       type: 'string',
       description: 'Existing catalog name (English letters only)',
       default: '',
-      required: true,
     },
     to: {
       type: 'string',
@@ -38,21 +38,21 @@ export default defineCommand({
 
     const config = await resolveConfig(ctx.args)
     const workspace = await readCatalogWorkspace(config)
-    if (!workspace.catalogs.length) {
-      throw new Error('No catalogs were found.')
+    const catalogs = workspace.catalogs.filter(catalog => catalog.name !== 'default')
+    if (!catalogs.length) {
+      throw new Error('No named catalogs were found.')
     }
 
-    const from = ctx.args.from
-    // const from = ctx.args.from || await select({
-    //   message: 'Select a catalog',
-    //   options: workspace.catalogs.map(catalog => ({ value: catalog.name, label: catalog.name })),
-    // })
-    // if (isCancel(from)) {
-    //   cancel('Catalog management cancelled.')
-    //   process.exit(1)
-    // }
+    const from = ctx.args.from || await select({
+      message: 'Select a catalog',
+      options: catalogs.map(catalog => ({ value: catalog.name, label: catalog.name })),
+    })
+    if (isCancel(from)) {
+      cancel('Catalog management cancelled.')
+      process.exit(1)
+    }
 
-    const catalog = workspace.catalogs.find(catalog => catalog.name === from)
+    const catalog = catalogs.find(catalog => catalog.name === from)
     if (!catalog) {
       throw new Error(`Catalog "${from}" was not found.`)
     }
