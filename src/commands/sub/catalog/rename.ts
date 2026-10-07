@@ -2,7 +2,7 @@ import { cancel, isCancel, select, text } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
-import { catalogName, dependencyFields, readCatalogWorkspace } from '../../../catalog/workspace.ts'
+import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
 export default defineCommand({
@@ -96,8 +96,6 @@ export default defineCommand({
       }
     }
 
-    console.log(JSON.stringify(workspace.manifests, null, 2))
-    console.log(workspace.document.toString())
-    // await saveCatalogWorkspace(workspace)
+    await saveCatalogWorkspace(workspace)
   },
 })

@@ -1,11 +1,10 @@
-import { writeFile } from 'node:fs/promises'
 import { cancel, confirm, isCancel, log, note } from '@clack/prompts'
 import { cyan, dim } from 'ansis'
 import { createMain, defineCommand, showUsage } from 'citty'
 import { isMap, isScalar } from 'yaml'
 import { version } from '../../package.json' with { type: 'json' }
 import { defaultArgs } from '../args/default.ts'
-import { readCatalogWorkspace } from '../catalog/workspace.ts'
+import { readCatalogWorkspace, saveCatalogWorkspace } from '../catalog/workspace.ts'
 import { resolveConfig } from '../config.ts'
 
 const subCommands = {
@@ -142,6 +141,6 @@ createMain(defineCommand({
       }
     }
 
-    await writeFile(workspace.file, workspace.document.toString(), 'utf-8')
+    await saveCatalogWorkspace(workspace)
   },
 }))()
