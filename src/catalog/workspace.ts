@@ -108,6 +108,9 @@ export function rewriteCatalogReferences(
 export async function saveCatalogWorkspace(workspace: CatalogWorkspace): Promise<void> {
   const updates = []
   for (const manifest of workspace.manifests) {
+    if (JSON.stringify(manifest.data) === manifest.original) {
+      continue
+    }
     const data = definePackageJSON(Object.fromEntries(
       Object.entries({
         ...(await readPackageJSON(manifest.file)),
