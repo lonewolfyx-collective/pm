@@ -239,7 +239,7 @@ The command is spelled `clearn`:
 
 ```bash
 clearn
-clearn --lock
+clearn --lockfile
 ```
 
 It searches recursively beneath the working directory and deletes matching targets immediately, without confirmation. `.git` and symbolic links are skipped.
@@ -257,7 +257,7 @@ dist               build              out
 .tern-port         Carthage
 ```
 
-`--lock` also removes recognized lockfiles for the detected package manager. `pnpm-workspace.yaml` is preserved. If the package manager cannot be detected, lockfiles are preserved.
+`--lockfile` also removes recognized lockfiles for the detected package manager. `pnpm-workspace.yaml` is preserved. If the package manager cannot be detected, lockfiles are preserved.
 
 ## Initialize a project
 

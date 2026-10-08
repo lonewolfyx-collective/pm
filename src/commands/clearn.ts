@@ -4,7 +4,7 @@ import { cyan, red, yellow } from 'ansis'
 import { glob } from 'glob'
 import { LOCKS } from 'package-manager-detector'
 import { rimraf } from 'rimraf'
-import { lock } from '../args/clearn.ts'
+import { lockfile } from '../args/lockfile.ts'
 import { runCommand } from '../run.ts'
 
 const ignoredDirectories = [
@@ -33,11 +33,11 @@ const ignoredDirectories = [
   'Carthage',
 ]
 
-runCommand('clearn', lock, async (config, ctx) => {
+runCommand('clearn', lockfile, async (config, ctx) => {
   const cwd = resolve(config.cwd)
   const agent = config.detect?.agent
   const manager = agent === 'pnpm-rush' ? 'pnpm' : agent?.split('@')[0]
-  const lockFiles = new Set(ctx.args.lock
+  const lockFiles = new Set(ctx.args.lockfile
     ? Object.entries(LOCKS)
       // LOCKS also contains workspace configuration files used for detection.
         .filter(([file, name]) => name === manager && !file.endsWith('-workspace.yaml'))
@@ -67,7 +67,7 @@ runCommand('clearn', lock, async (config, ctx) => {
       : path.isFile() && (path.name === '.tern-port' || lockFiles.has(path.name)))
     .map(path => path.fullpath())
 
-  if (ctx.args.lock && !manager) {
+  if (ctx.args.lockfile && !manager) {
     log.warn('Could not detect the package manager; lockfiles were preserved.')
   }
 
