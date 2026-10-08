@@ -1,12 +1,26 @@
 import { cancel, isCancel, log } from '@clack/prompts'
 import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
+import { packageArgs } from '../args/package.ts'
 import { highlightCatalog, selectCatalog, selectDependencies } from '../catalog/prompts.ts'
 import { catalogOptions } from '../catalog/rules.ts'
 import { resolveCatalogName } from '../catalog/utils.ts'
 import { executeCommand, runCommand } from '../run.ts'
 
 runCommand('ni', {
+  ...packageArgs,
+  devDependencies: {
+    type: 'boolean',
+    description: 'Install packages as development dependencies',
+    alias: ['d', 'D'],
+    default: false,
+  },
+  optionalDependencies: {
+    type: 'boolean',
+    description: 'Install packages as optional dependencies',
+    alias: ['o', 'O'],
+    default: false,
+  },
   catalog: {
     type: 'boolean',
     description: 'Assign packages to built-in or custom catalogs using rules and interactive selection (pnpm only)',

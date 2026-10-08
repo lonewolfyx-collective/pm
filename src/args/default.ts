@@ -7,21 +7,4 @@ export const defaultArgs = {
     alias: 'c',
     default: process.cwd(),
   },
-  pkg: {
-    type: 'positional',
-    description: 'Specify one or more package names',
-    default: '',
-  },
-  devDependencies: {
-    type: 'boolean',
-    description: 'Install packages as development dependencies',
-    alias: ['d', 'D'],
-    default: false,
-  },
-  optionalDependencies: {
-    type: 'boolean',
-    description: 'Install packages as optional dependencies',
-    alias: ['o', 'O'],
-    default: false,
-  },
 } as const satisfies ArgsDef

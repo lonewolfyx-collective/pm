@@ -5,6 +5,7 @@ import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { isMap, parseDocument } from 'yaml'
+import { packageArgs } from '../args/package.ts'
 import { matchesOverrideDependency } from '../catalog/utils.ts'
 import { catalogName } from '../catalog/workspace.ts'
 import { executeCommand, runCommand } from '../run.ts'
@@ -116,7 +117,7 @@ export async function cleanCatalogs(
   }
 }
 
-runCommand('remove', async (config) => {
+runCommand('remove', packageArgs, async (config) => {
   const { status: monorepo, file: workspaceFile, workspaceConfig } = config.monorepo
   if (monorepo && !workspaceFile) {
     throw new Error('Could not find pnpm-workspace.yaml for the monorepo.')
