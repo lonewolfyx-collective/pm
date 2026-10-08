@@ -1,8 +1,7 @@
 import { cancel, isCancel, select, text } from '@clack/prompts'
 import { defineCommand } from 'citty'
-import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
-import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
+import { readCatalogWorkspace, rewriteCatalogReferences, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
 // command: catalog rename --from/-f/-form <from> --to/-t <to>
@@ -80,23 +79,7 @@ export default defineCommand({
     workspace.document.deleteIn(catalog.path)
 
     const specifier = to === 'default' ? 'catalog:' : `catalog:${to}`
-    for (const { data } of workspace.manifests) {
-      for (const field of dependencyFields) {
-        for (const [dependency, value] of Object.entries(data[field] ?? {})) {
-          if (catalogName(value) === from) {
-            data[field]![dependency] = specifier
-          }
-        }
-      }
-    }
-    const overrides = workspace.document.get('overrides')
-    if (isMap(overrides)) {
-      for (const override of overrides.items) {
-        if (catalogName(overrides.get(override.key) as string) === from) {
-          overrides.set(override.key, specifier)
-        }
-      }
-    }
+    rewriteCatalogReferences(workspace, from, () => specifier)
 
     await saveCatalogWorkspace(workspace)
   },

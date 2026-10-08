@@ -78,9 +78,39 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<Catal
   return { file, document, catalogs, manifests }
 }
 
+export function rewriteCatalogReferences(
+  workspace: CatalogWorkspace,
+  from: string,
+  resolveSpecifier: (dependency: string) => string,
+): void {
+  const source = `catalog:${from}`
+  for (const { data } of workspace.manifests) {
+    for (const field of dependencyFields) {
+      for (const [dependency, specifier] of Object.entries(data[field])) {
+        if (specifier === source) {
+          data[field][dependency] = resolveSpecifier(dependency)
+        }
+      }
+    }
+  }
+
+  const overrides = workspace.document.get('overrides')
+  if (isMap(overrides)) {
+    for (const { key } of overrides.items) {
+      if (overrides.get(key) === source) {
+        const dependency = String(key).split('>').pop()!.trim().replace(/(?!^)@.*$/, '')
+        overrides.set(key, resolveSpecifier(dependency))
+      }
+    }
+  }
+}
+
 export async function saveCatalogWorkspace(workspace: CatalogWorkspace): Promise<void> {
   const updates = []
   for (const manifest of workspace.manifests) {
+    if (JSON.stringify(manifest.data) === manifest.original) {
+      continue
+    }
     const data = definePackageJSON(Object.fromEntries(
       Object.entries({
         ...(await readPackageJSON(manifest.file)),
