@@ -1,7 +1,7 @@
 import { cancel, isCancel, select } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { defaultArgs } from '../../../args/default.ts'
-import { readCatalogWorkspace, rewriteCatalogReferences } from '../../../catalog/workspace.ts'
+import { readCatalogWorkspace, rewriteCatalogReferences, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
 // command: catalog remove --catalog
@@ -77,8 +77,6 @@ export default defineCommand({
     rewriteCatalogReferences(workspace, name, resolveSpecifier)
     workspace.document.deleteIn(catalog.path)
 
-    console.log(JSON.stringify(workspace, null, 2))
-
-    // await saveCatalogWorkspace(workspace)
+    await saveCatalogWorkspace(workspace)
   },
 })
