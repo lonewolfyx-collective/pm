@@ -1,6 +1,7 @@
 import type { State } from '@clack/core'
 import { CANCEL_SYMBOL, MultiSelectPrompt, SelectPrompt, settings, wrapTextWithPrefix } from '@clack/core'
 import {
+  isCancel,
   limitOptions,
   MULTISELECT_INSTRUCTIONS,
   S_BAR,
@@ -125,7 +126,7 @@ export async function selectCatalog(
     },
   })
 
-  return typeof name === 'string' ? name.trim() : CANCEL_SYMBOL
+  return isCancel(name) ? CANCEL_SYMBOL : name.trim()
 }
 
 export async function selectDependencies(message: string, packages: string[]): Promise<string[] | typeof CANCEL_SYMBOL> {
