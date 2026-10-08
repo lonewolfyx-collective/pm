@@ -9,6 +9,7 @@ import { glob, hasMagic } from 'glob'
 import { detect } from 'package-manager-detector'
 import { readPackageJSON } from 'pkg-types'
 import { parse } from 'yaml'
+import { normalizeDependencies } from './utils.ts'
 
 const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> => {
   const monorepo: ResolveConfig['monorepo'] = {
@@ -76,12 +77,7 @@ const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> 
     return {
       name: pkg.name!,
       file,
-      info: {
-        dependencies: pkg.dependencies ?? {},
-        devDependencies: pkg.devDependencies ?? {},
-        peerDependencies: pkg.peerDependencies ?? {},
-        optionalDependencies: pkg.optionalDependencies ?? {},
-      },
+      info: normalizeDependencies(pkg),
     }
   }))
 

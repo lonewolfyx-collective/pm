@@ -1,5 +1,10 @@
 import { catalogOptions } from './rules.ts'
 
+export function matchesOverrideDependency(key: string, dependency: string): boolean {
+  const selector = key.split('>').pop()!.trim()
+  return selector === dependency || selector.startsWith(`${dependency}@`)
+}
+
 export function resolveCatalogName(packageSpecifier: string): string | undefined {
   // Match registry names (including versions and npm aliases), leaving other sources for manual assignment.
   const registrySpecifier = packageSpecifier
