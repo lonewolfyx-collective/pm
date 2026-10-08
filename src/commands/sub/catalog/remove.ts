@@ -1,8 +1,7 @@
 import { cancel, isCancel, select } from '@clack/prompts'
 import { defineCommand } from 'citty'
-import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
-import { dependencyFields, readCatalogWorkspace } from '../../../catalog/workspace.ts'
+import { readCatalogWorkspace, rewriteCatalogReferences } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
 // command: catalog remove --catalog
@@ -75,25 +74,7 @@ export default defineCommand({
     const resolveSpecifier = (dependency: string): string =>
       destination === 'default' ? 'catalog:' : catalog.entries.get(dependency) as string
 
-    for (const { data } of workspace.manifests) {
-      for (const field of dependencyFields) {
-        for (const [dependency, specifier] of Object.entries(data[field])) {
-          if (specifier === `catalog:${name}`) {
-            data[field][dependency] = resolveSpecifier(dependency)
-          }
-        }
-      }
-    }
-
-    const overrides = workspace.document.get('overrides')
-    if (isMap(overrides)) {
-      for (const { key } of overrides.items) {
-        if (overrides.get(key) === `catalog:${name}`) {
-          const dependency = String(key).split('>').pop()!.trim().replace(/(?!^)@.*$/, '')
-          overrides.set(key, resolveSpecifier(dependency))
-        }
-      }
-    }
+    rewriteCatalogReferences(workspace, name, resolveSpecifier)
     workspace.document.deleteIn(catalog.path)
 
     console.log(JSON.stringify(workspace, null, 2))
