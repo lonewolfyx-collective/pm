@@ -29,10 +29,8 @@ export async function cleanCatalogs(
     throw document.errors[0]
   }
 
-  const removals = new Map<string, string[]>()
   const catalogs = new Map<string, Set<string>>()
   for (const [project, packages] of selections) {
-    removals.set(project.file, packages)
     for (const pkg of packages) {
       for (const field of dependencyFields.filter(field => Object.hasOwn(project.info[field], pkg))) {
         const name = catalogName(project.info[field][pkg]!)
@@ -47,13 +45,9 @@ export async function cleanCatalogs(
 
   const manifests = await Promise.all(files.map(file => readPackageJSON(file)))
   const referenced = new Map<string, Set<string>>()
-  for (const [index, manifest] of manifests.entries()) {
-    const removedPackages = removals.get(files[index]!) ?? []
+  for (const manifest of manifests) {
     for (const field of referenceFields) {
       for (const [pkg, specifier] of Object.entries(manifest[field] ?? {})) {
-        if (removedPackages.includes(pkg)) {
-          continue
-        }
         const name = catalogName(specifier)
         if (name!) {
           const packages = referenced.get(name) ?? new Set<string>()
