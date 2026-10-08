@@ -2,6 +2,7 @@ import { cancel, isCancel } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
+import { packageArgs } from '../../../args/package.ts'
 import { selectCatalog } from '../../../catalog/prompts.ts'
 import { catalogOptions } from '../../../catalog/rules.ts'
 import { matchesOverrideDependency, resolveCatalogName } from '../../../catalog/utils.ts'
@@ -16,6 +17,7 @@ export default defineCommand({
   },
   args: {
     ...defaultArgs,
+    ...packageArgs,
     to: {
       type: 'string',
       description: 'Destination catalog name (omit to use catalog rules)',

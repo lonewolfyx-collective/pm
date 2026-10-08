@@ -34,7 +34,7 @@ createMain(defineCommand({
   },
   subCommands,
   async run(ctx) {
-    if (Object.hasOwn(subCommands, ctx.args.pkg)) {
+    if (ctx.args._[0] && Object.hasOwn(subCommands, ctx.args._[0])) {
       return
     }
     if (!ctx.args.unUsed) {

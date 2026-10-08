@@ -89,7 +89,11 @@ export const resolveConfig = async <T extends ArgsDef = CommandArgs>(options: Op
     cwd: options.cwd,
   })
 
-  const packages = [...new Set([options.pkg, ...(options._ ?? [])].filter(Boolean))]
+  const packages = [
+    ...new Set(
+      [options.pkg, ...options._].filter((v): v is string => !!v),
+    ),
+  ]
 
   return {
     cwd: options.cwd,
