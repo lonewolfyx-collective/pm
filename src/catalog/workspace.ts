@@ -3,6 +3,8 @@ import { writeFile } from 'node:fs/promises'
 import { log } from '@clack/prompts'
 import { definePackageJSON, readPackageJSON, resolvePackageJSON, writePackageJSON } from 'pkg-types'
 import { Document, isMap } from 'yaml'
+import { normalizeDependencies } from '../utils.ts'
+import { matchesOverrideDependency } from './utils.ts'
 
 export const dependencyFields = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'] as const
 
@@ -41,16 +43,11 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<Catal
   const root = await readPackageJSON(config.cwd)
   const rootProject = {
     file: await resolvePackageJSON(config.cwd),
-    info: {
-      dependencies: root.dependencies ?? {},
-      devDependencies: root.devDependencies ?? {},
-      optionalDependencies: root.optionalDependencies ?? {},
-      peerDependencies: root.peerDependencies ?? {},
-    },
+    info: normalizeDependencies(root),
   }
 
   const manifests: CatalogWorkspace['manifests'] = []
-  for (const { file, info } of [rootProject, ...projects]) {
+  for (const { file, info } of [rootProject, ...projects.filter(project => project.file !== rootProject.file)]) {
     manifests.push({
       file,
       original: JSON.stringify(info),
@@ -72,9 +69,8 @@ export async function readCatalogWorkspace(config: ResolveConfig): Promise<Catal
     if (!catalog) {
       continue
     }
-    const selector = key.split('>').pop()!.trim()
     const dependency = catalog.entries.items.map(entry => String(entry.key))
-      .find(dependency => selector === dependency || selector.startsWith(`${dependency}@`))
+      .find(dependency => matchesOverrideDependency(key, dependency))
     if (dependency) {
       catalog.used.add(dependency)
     }

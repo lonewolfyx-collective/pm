@@ -5,8 +5,10 @@ import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { isMap, parseDocument } from 'yaml'
+import { matchesOverrideDependency } from '../catalog/utils.ts'
 import { catalogName } from '../catalog/workspace.ts'
 import { executeCommand, runCommand } from '../run.ts'
+import { normalizeDependencies } from '../utils.ts'
 
 type Project = ResolveConfig['monorepo']['package'][number]
 
@@ -60,11 +62,8 @@ export async function cleanCatalogs(
   const overrides = document.get('overrides', true)
   const isReferenced = (name: string, pkg: string): boolean => {
     return referenced.get(name)?.has(pkg) === true
-      || (isMap(overrides) && overrides.items.some((entry) => {
-        const selector = String(entry.key).split('>').pop()!.trim()
-        return catalogName(String(entry.value)) === name
-          && (selector === pkg || selector.startsWith(`${pkg}@`))
-      }))
+      || (isMap(overrides) && overrides.items.some(entry => catalogName(String(entry.value)) === name
+        && matchesOverrideDependency(String(entry.key), pkg)))
   }
   const isCatalogReferenced = (name: string): boolean => {
     return referenced.has(name)
@@ -127,12 +126,7 @@ runCommand('remove', async (config) => {
   const rootProject: Project = {
     name: manifest.name ?? 'root',
     file: rootFile,
-    info: {
-      dependencies: manifest.dependencies ?? {},
-      devDependencies: manifest.devDependencies ?? {},
-      peerDependencies: manifest.peerDependencies ?? {},
-      optionalDependencies: manifest.optionalDependencies ?? {},
-    },
+    info: normalizeDependencies(manifest),
   }
   const projects = monorepo
     ? [...config.monorepo.package.filter(project => project.file !== rootFile), rootProject]

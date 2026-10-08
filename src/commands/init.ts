@@ -102,7 +102,7 @@ runCommand('init', {
     cwd = customWorkspace ? resolve(config.cwd, selected.trim()) : selected
 
     if (customWorkspace) {
-      const source = workspaceFile ? await readFile(workspaceFile, 'utf8') : ''
+      const source = await readFile(workspaceFile, 'utf8')
       const document = parseDocument(source)
       if (document.errors.length) {
         throw document.errors[0]
@@ -125,8 +125,7 @@ runCommand('init', {
           document.set('packages', [...packages, pattern])
         }
 
-        await writeFile(workspaceFile, document.toString(), { flag: workspaceFile ? 'w' : 'wx' })
-        workspaceConfig.packages = [...packages, pattern]
+        await writeFile(workspaceFile, document.toString())
       }
     }
 

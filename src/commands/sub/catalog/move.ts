@@ -4,7 +4,7 @@ import { isMap } from 'yaml'
 import { defaultArgs } from '../../../args/default.ts'
 import { selectCatalog } from '../../../catalog/prompts.ts'
 import { catalogOptions } from '../../../catalog/rules.ts'
-import { resolveCatalogName } from '../../../catalog/utils.ts'
+import { matchesOverrideDependency, resolveCatalogName } from '../../../catalog/utils.ts'
 import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
 import { resolveConfig } from '../../../config.ts'
 
@@ -47,11 +47,8 @@ export default defineCommand({
       }
 
       const overrideKeys = isMap(overrides)
-        ? overrides.items.filter((override) => {
-            const selector = String(override.key).split('>').pop()!.trim()
-            return catalogName(overrides.get(override.key) as string) !== undefined
-              && (selector === dependency || selector.startsWith(`${dependency}@`))
-          }).map(override => override.key)
+        ? overrides.items.filter(override => catalogName(overrides.get(override.key) as string) !== undefined
+          && matchesOverrideDependency(String(override.key), dependency)).map(override => override.key)
         : []
 
       const to = ctx.args.to || resolveCatalogName(dependency) || await selectCatalog(
