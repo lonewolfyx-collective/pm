@@ -1,6 +1,6 @@
 import type { CommandHandler } from '../types.ts'
 import { initArgs } from '../args/init.ts'
-import { createMonorepo, createProject } from '../init'
+import { createMonorepo, createProject, insertProjectGithub } from '../init'
 import { runCommand } from '../run.ts'
 
 type InitHandler = CommandHandler<typeof initArgs>
@@ -12,6 +12,10 @@ interface InitStrategy {
 
 runCommand('init', initArgs, async (config, ctx) => {
   const strategies: InitStrategy[] = [
+    {
+      matches: args => args.github,
+      run: insertProjectGithub,
+    },
     {
       matches: args => args.monorepo,
       run: createMonorepo,
