@@ -11,4 +11,10 @@ export const initArgs = {
     description: 'Select a monorepo workspace to create a project',
     default: false,
   },
+  github: {
+    type: 'boolean',
+    description: 'Initialize the project with CI/CD',
+    default: false,
+    alias: ['ci', 'ci-cd', 'cd'],
+  },
 } as const satisfies ArgsDef
