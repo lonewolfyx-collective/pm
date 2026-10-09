@@ -1,7 +1,7 @@
 import type { PnpmWorkspaceSpecification } from '@schemastore/pnpm-workspace'
 import type { ArgsDef } from 'citty'
-import type { OptionsArgs } from './args/args'
-import type { CommandArgs, ResolveConfig } from './types.ts'
+import type { OptionsArgs } from '@/args/args.d.ts'
+import type { CommandArgs, ResolveConfig } from '@/types.ts'
 import { readFile } from 'node:fs/promises'
 import { dirname, posix, resolve } from 'node:path'
 import { findUp } from 'find-up'
@@ -9,7 +9,7 @@ import { glob, hasMagic } from 'glob'
 import { detect } from 'package-manager-detector'
 import { readPackageJSON } from 'pkg-types'
 import { parse } from 'yaml'
-import { normalizeDependencies } from './utils.ts'
+import { normalizeDependencies } from '@/utils.ts'
 
 const resolveMonorepo = async (cwd: string): Promise<ResolveConfig['monorepo']> => {
   const monorepo: ResolveConfig['monorepo'] = {

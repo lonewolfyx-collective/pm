@@ -1,9 +1,9 @@
-import type { ResolveConfig } from './types.ts'
+import type { ResolveConfig } from '@/types.ts'
 import { cancel, isCancel, select } from '@clack/prompts'
 import { Fzf } from 'fzf'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
-import { executeCommand } from './run.ts'
+import { executeCommand } from '@/run.ts'
 
 export async function runPackageScript(keyword: string, config: ResolveConfig): Promise<void> {
   const filename = await resolvePackageJSON()

@@ -1,4 +1,4 @@
-import { catalogOptions } from './rules.ts'
+import { catalogOptions } from '@/catalog/rules.ts'
 
 export function matchesOverrideDependency(key: string, dependency: string): boolean {
   const selector = key.split('>').pop()!.trim()

@@ -1,7 +1,7 @@
-import type { CommandHandler } from '../types.ts'
-import { initArgs } from '../args/init.ts'
-import { createMonorepo, createProject, insertProjectGithub } from '../init'
-import { runCommand } from '../run.ts'
+import type { CommandHandler } from '@/types.ts'
+import { initArgs } from '@/args/init.ts'
+import { createMonorepo, createProject, insertProjectGithub } from '@/init/index.ts'
+import { runCommand } from '@/run.ts'
 
 type InitHandler = CommandHandler<typeof initArgs>
 

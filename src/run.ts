@@ -7,12 +7,12 @@ import type {
   PackageManageCommandParameters,
   ResolveConfig,
   ResolvedCommand,
-} from './types.ts'
+} from '@/types.ts'
 import { defineCommand, runMain } from 'citty'
 import { x } from 'tinyexec'
+import { defaultArgs } from '@/args/default.ts'
+import { resolveConfig } from '@/config.ts'
 import { version } from '../package.json' with { type: 'json' }
-import { defaultArgs } from './args/default.ts'
-import { resolveConfig } from './config.ts'
 
 export function runCommand(command: commandOrMeta, fn: CommandHandler): void
 export function runCommand<const T extends ArgsDef>(command: commandOrMeta, args: T, fn: CommandHandler<T>): void

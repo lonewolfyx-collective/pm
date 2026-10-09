@@ -1,10 +1,10 @@
-import type { initArgs } from '../args/init.ts'
-import type { CommandHandler } from '../types.ts'
+import type { initArgs } from '@/args/init.ts'
+import type { CommandHandler } from '@/types.ts'
 import { access } from 'node:fs/promises'
 import { confirm, isCancel, outro, spinner } from '@clack/prompts'
 import { resolvePackageJSON } from 'pkg-types'
-import { executeCommand } from '../run.ts'
-import { clearDirectory } from '../utils.ts'
+import { executeCommand } from '@/run.ts'
+import { clearDirectory } from '@/utils.ts'
 
 export const createProject: CommandHandler<typeof initArgs> = async (config) => {
   const packageJsonExists = await access(await resolvePackageJSON(config.cwd))

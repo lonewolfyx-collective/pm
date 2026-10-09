@@ -3,15 +3,15 @@ import { updateWorkspaceManifest } from '@pnpm/workspace.workspace-manifest-writ
 import { cyan, dim } from 'ansis'
 import { createMain, defineCommand, showUsage } from 'citty'
 import { isMap } from 'yaml'
+import { defaultArgs } from '@/args/default.ts'
+import { readCatalogWorkspace } from '@/catalog/workspace.ts'
+import { resolveConfig } from '@/config.ts'
 import { version } from '../../package.json' with { type: 'json' }
-import { defaultArgs } from '../args/default.ts'
-import { readCatalogWorkspace } from '../catalog/workspace.ts'
-import { resolveConfig } from '../config.ts'
 
 const subCommands = {
-  move: () => import('./sub/catalog/move.ts').then(r => r.default),
-  remove: () => import('./sub/catalog/remove.ts').then(r => r.default),
-  rename: () => import('./sub/catalog/rename.ts').then(r => r.default),
+  move: () => import('@/commands/sub/catalog/move.ts').then(r => r.default),
+  remove: () => import('@/commands/sub/catalog/remove.ts').then(r => r.default),
+  rename: () => import('@/commands/sub/catalog/rename.ts').then(r => r.default),
 }
 
 const spaces = (length: number): string => Array.from({ length }, _ => ` `).join('')

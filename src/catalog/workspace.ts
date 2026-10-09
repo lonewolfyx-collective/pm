@@ -1,10 +1,10 @@
-import type { CatalogWorkspace, ResolveConfig } from '../types.ts'
+import type { CatalogWorkspace, ResolveConfig } from '@/types.ts'
 import { writeFile } from 'node:fs/promises'
 import { log } from '@clack/prompts'
 import { definePackageJSON, readPackageJSON, resolvePackageJSON, writePackageJSON } from 'pkg-types'
 import { Document, isMap } from 'yaml'
-import { normalizeDependencies } from '../utils.ts'
-import { matchesOverrideDependency } from './utils.ts'
+import { matchesOverrideDependency } from '@/catalog/utils.ts'
+import { normalizeDependencies } from '@/utils.ts'
 
 export const dependencyFields = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'] as const
 
