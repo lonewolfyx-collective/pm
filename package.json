@@ -38,6 +38,7 @@
     "dev": "tsdown --watch",
     "lint": "eslint .",
     "lint:fix": "eslint --fix",
+    "prepublishOnly": "pnpm build",
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
