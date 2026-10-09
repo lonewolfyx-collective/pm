@@ -41,6 +41,10 @@
     "prepublishOnly": "pnpm build",
     "prepare": "simple-git-hooks"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
   "dependencies": {
     "@clack/core": "^1.5.1",
     "@clack/prompts": "^1.8.1",
