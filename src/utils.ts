@@ -1,5 +1,5 @@
 import type { PackageJson } from 'pkg-types'
-import type { ResolveConfig } from './types.ts'
+import type { ResolveConfig } from '@/types.ts'
 import { readdir, rm, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { x } from 'tinyexec'

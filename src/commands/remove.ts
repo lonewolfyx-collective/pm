@@ -1,15 +1,15 @@
-import type { ResolveConfig } from '../types.ts'
+import type { ResolveConfig } from '@/types.ts'
 import { readFile, writeFile } from 'node:fs/promises'
 import { cancel, isCancel, multiselect } from '@clack/prompts'
 import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { isMap, parseDocument } from 'yaml'
-import { packageArgs } from '../args/package.ts'
-import { matchesOverrideDependency } from '../catalog/utils.ts'
-import { catalogName } from '../catalog/workspace.ts'
-import { executeCommand, runCommand } from '../run.ts'
-import { normalizeDependencies } from '../utils.ts'
+import { packageArgs } from '@/args/package.ts'
+import { matchesOverrideDependency } from '@/catalog/utils.ts'
+import { catalogName } from '@/catalog/workspace.ts'
+import { executeCommand, runCommand } from '@/run.ts'
+import { normalizeDependencies } from '@/utils.ts'
 
 type Project = ResolveConfig['monorepo']['package'][number]
 

@@ -1,8 +1,8 @@
 import { cancel, isCancel, select, text } from '@clack/prompts'
 import { defineCommand } from 'citty'
-import { defaultArgs } from '../../../args/default.ts'
-import { readCatalogWorkspace, rewriteCatalogReferences, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
-import { resolveConfig } from '../../../config.ts'
+import { defaultArgs } from '@/args/default.ts'
+import { readCatalogWorkspace, rewriteCatalogReferences, saveCatalogWorkspace } from '@/catalog/workspace.ts'
+import { resolveConfig } from '@/config.ts'
 
 // command: catalog rename --from/-f/-form <from> --to/-t <to>
 export default defineCommand({

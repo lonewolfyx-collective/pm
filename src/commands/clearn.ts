@@ -4,8 +4,8 @@ import { cyan, red, yellow } from 'ansis'
 import { glob } from 'glob'
 import { LOCKS } from 'package-manager-detector'
 import { rimraf } from 'rimraf'
-import { lockfile } from '../args/lockfile.ts'
-import { runCommand } from '../run.ts'
+import { lockfile } from '@/args/lockfile.ts'
+import { runCommand } from '@/run.ts'
 
 const ignoredDirectories = [
   'node_modules',

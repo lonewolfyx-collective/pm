@@ -1,11 +1,11 @@
 import { cancel, isCancel, log } from '@clack/prompts'
 import { cyan } from 'ansis'
 import { resolveCommand } from 'package-manager-detector'
-import { packageArgs } from '../args/package.ts'
-import { highlightCatalog, selectCatalog, selectDependencies } from '../catalog/prompts.ts'
-import { catalogOptions } from '../catalog/rules.ts'
-import { resolveCatalogName } from '../catalog/utils.ts'
-import { executeCommand, runCommand } from '../run.ts'
+import { packageArgs } from '@/args/package.ts'
+import { highlightCatalog, selectCatalog, selectDependencies } from '@/catalog/prompts.ts'
+import { catalogOptions } from '@/catalog/rules.ts'
+import { resolveCatalogName } from '@/catalog/utils.ts'
+import { executeCommand, runCommand } from '@/run.ts'
 
 runCommand('ni', {
   ...packageArgs,

@@ -1,5 +1,5 @@
-import type { initArgs } from '../args/init.ts'
-import type { CommandHandler } from '../types.ts'
+import type { initArgs } from '@/args/init.ts'
+import type { CommandHandler } from '@/types.ts'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { cancel, confirm, isCancel, select, spinner, text } from '@clack/prompts'

@@ -3,7 +3,7 @@ import type { ArgsDef, CommandContext, CommandMeta as CommandMetaData } from 'ci
 import type { DetectResult } from 'package-manager-detector'
 import type { PackageJson } from 'pkg-types'
 import type { Document, YAMLMap } from 'yaml'
-import type { defaultArgs } from './args/default.ts'
+import type { defaultArgs } from '@/args/default.ts'
 
 export interface ResolveConfig {
   cwd: string

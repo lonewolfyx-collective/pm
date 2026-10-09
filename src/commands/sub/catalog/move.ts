@@ -1,13 +1,13 @@
 import { cancel, isCancel } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { isMap } from 'yaml'
-import { defaultArgs } from '../../../args/default.ts'
-import { packageArgs } from '../../../args/package.ts'
-import { selectCatalog } from '../../../catalog/prompts.ts'
-import { catalogOptions } from '../../../catalog/rules.ts'
-import { matchesOverrideDependency, resolveCatalogName } from '../../../catalog/utils.ts'
-import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '../../../catalog/workspace.ts'
-import { resolveConfig } from '../../../config.ts'
+import { defaultArgs } from '@/args/default.ts'
+import { packageArgs } from '@/args/package.ts'
+import { selectCatalog } from '@/catalog/prompts.ts'
+import { catalogOptions } from '@/catalog/rules.ts'
+import { matchesOverrideDependency, resolveCatalogName } from '@/catalog/utils.ts'
+import { catalogName, dependencyFields, readCatalogWorkspace, saveCatalogWorkspace } from '@/catalog/workspace.ts'
+import { resolveConfig } from '@/config.ts'
 
 // command: catalog move <pkg...> --to/-to <catalog>
 export default defineCommand({
