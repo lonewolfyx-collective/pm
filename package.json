@@ -1,7 +1,7 @@
 {
   "name": "@lonewolfyx/pm",
   "type": "module",
-  "version": "0.0.0",
+  "version": "v1.0.0",
   "packageManager": "pnpm@11.24.0",
   "description": "🔥",
   "author": "lonewolfyx <https://github.com/lonewolfyx>",
@@ -40,6 +40,10 @@
     "lint:fix": "eslint --fix",
     "prepublishOnly": "pnpm build",
     "prepare": "simple-git-hooks"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "dependencies": {
     "@clack/core": "^1.5.1",
