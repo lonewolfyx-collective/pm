@@ -1,13 +1,15 @@
 import type { initArgs } from '@/args/init.ts'
 import type { CommandHandler } from '@/types.ts'
 import { access } from 'node:fs/promises'
-import { confirm, isCancel, outro, spinner } from '@clack/prompts'
-import { resolvePackageJSON } from 'pkg-types'
-import { executeCommand } from '@/run.ts'
+import { join } from 'node:path'
+import { cancel, confirm, isCancel, outro, text } from '@clack/prompts'
+import { choicesTemplate, create, git } from '@lonewolfyx/create'
 import { clearDirectory } from '@/utils.ts'
 
-export const createProject: CommandHandler<typeof initArgs> = async (config) => {
-  const packageJsonExists = await access(await resolvePackageJSON(config.cwd))
+export const createProject: CommandHandler<typeof initArgs> = async (config, ctx) => {
+  const projectPath = join(config.cwd, ctx.args.package)
+
+  const packageJsonExists = await access(join(config.cwd, 'package.json'))
     .then(() => true)
     .catch(() => false)
 
@@ -24,13 +26,35 @@ export const createProject: CommandHandler<typeof initArgs> = async (config) => 
     await clearDirectory(config.cwd)
   }
 
-  const s = spinner()
-  s.start('Init Project...')
+  const template = await choicesTemplate()
 
-  await executeCommand({
-    command: 'npx',
-    args: ['-y', '@lonewolfyx/setup'],
-  }, config)
+  if (isCancel(template)) {
+    cancel('Operation cancelled.')
+    return process.exit(0)
+  }
 
-  s.stop('🎉 Done')
+  const description = await text({
+    message: 'Description',
+    placeholder: '',
+    defaultValue: '',
+  }) as string
+
+  if (isCancel(description)) {
+    cancel('Operation cancelled.')
+    process.exit(1)
+  }
+
+  const context = {
+    cwd: config.cwd,
+    name: ctx.args.package,
+    projectPath,
+    description,
+    template,
+  }
+
+  if (ctx.args.git) {
+    await git(context)
+  }
+
+  await create(context)
 }

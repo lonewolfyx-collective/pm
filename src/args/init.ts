@@ -17,4 +17,9 @@ export const initArgs = {
     default: false,
     alias: ['ci', 'ci-cd', 'cd'],
   },
+  git: {
+    type: 'boolean',
+    description: 'git initial',
+    default: false,
+  },
 } as const satisfies ArgsDef

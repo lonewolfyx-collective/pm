@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.5.1",
+    "@lonewolfyx/create": "^0.0.12",
     "@lonewolfyx/tsconfig": "^0.0.6",
     "@schemastore/pnpm-workspace": "^1.0.13",
     "@types/node": "^26.6.4",
