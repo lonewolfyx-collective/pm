@@ -1,4 +1,5 @@
 import type { ArgsDef } from 'citty'
+import type { StdioOptions } from 'node:child_process'
 import type {
   CommandArgs,
   CommandHandler,
@@ -46,13 +47,13 @@ export function runCommand(...args: Parameters<typeof runCommand>): void {
   })
 }
 
-export async function executeCommand(command: ResolvedCommand, config: ResolveConfig): Promise<void> {
+export async function executeCommand(command: ResolvedCommand, config: ResolveConfig, stdio: StdioOptions = 'inherit'): Promise<void> {
   const proc = x(
     command.command,
     command.args,
     {
       nodeOptions: {
-        stdio: 'inherit',
+        stdio,
         cwd: config.cwd,
       },
       nodePath: false,
