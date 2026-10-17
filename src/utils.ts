@@ -1,7 +1,7 @@
 import type { PackageJson } from 'pkg-types'
 import type { ResolveConfig } from '@/types.ts'
-import { readdir, rm, stat } from 'node:fs/promises'
-import path from 'node:path'
+import { access, readdir, rm, stat } from 'node:fs/promises'
+import path, { resolve } from 'node:path'
 import { x } from 'tinyexec'
 
 export function normalizeDependencies(pkg: PackageJson): ResolveConfig['monorepo']['package'][number]['info'] {
@@ -40,6 +40,13 @@ export async function getGithubRepo(cwd: string): Promise<{ owner: string, repo:
   }
 
   return repo
+}
+
+export async function isHasPackageJson(cwd: string): Promise<boolean> {
+  const packageJsonPath = resolve(cwd, 'package.json')
+  return await access(packageJsonPath)
+    .then(() => true)
+    .catch(() => false)
 }
 
 export async function clearDirectory(dirPath: string): Promise<void> {

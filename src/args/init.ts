@@ -22,4 +22,10 @@ export const initArgs = {
     description: 'git initial',
     default: false,
   },
+  dependencies: {
+    type: 'boolean',
+    description: 'Initialize project dependencies',
+    default: false,
+    alias: 'p',
+  },
 } as const satisfies ArgsDef

@@ -86,14 +86,6 @@
   },
   "inlinedDependencies": {
     "@lonewolfyx/create": "0.0.12",
-    "@schemastore/pnpm-workspace": "1.0.13",
-    "defu": "6.1.7",
-    "giget": [
-      "2.0.0",
-      "3.3.1"
-    ],
-    "node-fetch-native": "1.6.7",
-    "nypm": "0.6.10",
-    "pathe": "2.0.3"
+    "@schemastore/pnpm-workspace": "1.0.13"
   }
 }
