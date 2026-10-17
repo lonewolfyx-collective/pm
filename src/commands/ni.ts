@@ -21,6 +21,12 @@ runCommand('ni', {
     alias: ['o', 'O'],
     default: false,
   },
+  peerDependencies: {
+    type: 'boolean',
+    description: 'Install packages as peer dependencies',
+    default: false,
+    alias: ['p', 'peer'],
+  },
   catalog: {
     type: 'boolean',
     description: 'Assign packages to built-in or custom catalogs using rules and interactive selection (pnpm only)',
@@ -56,6 +62,10 @@ runCommand('ni', {
 
   if (ctx.args.optionalDependencies) {
     installArgs.push('-o')
+  }
+
+  if (ctx.args.peerDependencies) {
+    installArgs.push('--save-peer')
   }
 
   const groups = new Map<string, string[]>()
