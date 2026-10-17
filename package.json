@@ -43,7 +43,10 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix",
     "prepublishOnly": "pnpm build",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
@@ -79,7 +82,8 @@
     "tsdown": "^0.23.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "verify-git-commit": "^0.0.1"
+    "verify-git-commit": "^0.0.1",
+    "vitepress": "^2.0.0-alpha.20"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged",
