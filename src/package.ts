@@ -5,7 +5,7 @@ import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { executeCommand } from '@/run.ts'
 
-export async function runPackageScript(keyword: string, config: ResolveConfig): Promise<void> {
+export async function runPackageScripts(keyword: string, config: ResolveConfig): Promise<void> {
   const filename = await resolvePackageJSON()
   const pkg = await readPackageJSON(filename)
   const scripts = new Fzf(Object.keys(pkg.scripts ?? {})).find(keyword)

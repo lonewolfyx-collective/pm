@@ -1,4 +1,4 @@
-import { runPackageScript } from '@/package.ts'
+import { runPackageScripts } from '@/package.ts'
 import { runCommand } from '@/run.ts'
 
-runCommand('dev', async config => await runPackageScript('dev', config))
+runCommand('dev', async config => await runPackageScripts('dev', config))
