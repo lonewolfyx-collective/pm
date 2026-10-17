@@ -33,6 +33,10 @@
     "clearn": "./bin/clearn.mjs",
     "init": "./bin/init.mjs"
   },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
