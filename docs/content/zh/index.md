@@ -5,6 +5,12 @@ hero:
   name: '@lonewolfyx/pm'
   text: 一组更顺手的包管理 CLI
   tagline: 安装与移除依赖、维护 pnpm catalog、运行项目脚本，以及初始化和清理工作区。
+  image:
+    src: /hero-terminal.svg
+    alt: pm 命令行工作流示意图
+    width: 520
+    height: 400
+    fetchpriority: high
   actions:
     - theme: brand
       text: 快速开始
