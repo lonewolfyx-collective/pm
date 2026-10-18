@@ -1,4 +1,5 @@
 import { defineAdditionalConfig } from 'vitepress'
+import { footer } from '../../.vitepress/footer.ts'
 
 export default defineAdditionalConfig({
   title: 'package management CLI',
@@ -57,6 +58,7 @@ export default defineAdditionalConfig({
       prev: 'Previous page',
       next: 'Next page',
     },
+    footer,
     notFound: {
       title: 'Page not found',
       linkLabel: 'Go to home',

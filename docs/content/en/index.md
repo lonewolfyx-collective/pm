@@ -5,6 +5,12 @@ hero:
   name: '@lonewolfyx/pm'
   text: A friendlier package-management CLI
   tagline: Install and remove dependencies, maintain pnpm catalogs, run project scripts, and initialize or clean workspaces.
+  image:
+    src: /hero-terminal.svg
+    alt: pm command-line workflow illustration
+    width: 520
+    height: 400
+    fetchpriority: high
   actions:
     - theme: brand
       text: Get Started

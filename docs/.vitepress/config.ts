@@ -3,6 +3,10 @@ import { markdown as zhMarkdown } from '../content/config.ts'
 
 export default defineConfig({
   title: 'A set of more convenient CLI for package management',
+  head: [
+    ['meta', { name: 'theme-color', content: '#fdfdfb', media: '(prefers-color-scheme: light)' }],
+    ['meta', { name: 'theme-color', content: '#11110f', media: '(prefers-color-scheme: dark)' }],
+  ],
   cleanUrls: true,
   lastUpdated: true,
   srcDir: './content',
@@ -13,6 +17,7 @@ export default defineConfig({
     lineNumbers: true,
   },
   themeConfig: {
+    aside: false,
     search: {
       provider: 'local',
     },

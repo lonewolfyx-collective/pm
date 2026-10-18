@@ -1,5 +1,6 @@
 import type { MarkdownLocaleOptions } from 'vitepress'
 import { defineAdditionalConfig } from 'vitepress'
+import { footer } from '../.vitepress/footer.ts'
 
 export const markdown: MarkdownLocaleOptions = {
   container: {
@@ -94,6 +95,7 @@ export default defineAdditionalConfig({
       prev: '上一页',
       next: '下一页',
     },
+    footer,
     notFound: {
       title: '页面未找到',
       linkLabel: '前往首页',
