@@ -1,9 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="520" height="400" viewBox="0 0 520 400" fill="none">
-  <rect width="520" height="400" fill="#FDFDFB"/>
-  <g stroke="#E4E4DE">
-    <path d="M0 40H520M0 80H520M0 120H520M0 160H520M0 200H520M0 240H520M0 280H520M0 320H520M0 360H520"/>
-    <path d="M40 0V400M80 0V400M120 0V400M160 0V400M200 0V400M240 0V400M280 0V400M320 0V400M360 0V400M400 0V400M440 0V400M480 0V400"/>
-  </g>
   <rect x="32" y="48" width="456" height="304" fill="#FDFDFB" stroke="#0A0A0A"/>
   <path d="M32 88H488" stroke="#0A0A0A"/>
   <circle cx="53" cy="68" r="4" fill="#0A0A0A"/>
@@ -18,5 +13,4 @@
   <text x="56" y="286" fill="#7A7A73" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="12">selected apps/docs · pnpm run dev</text>
   <rect x="56" y="310" width="96" height="22" fill="#0A0A0A"/>
   <text x="69" y="325" fill="#FDFDFB" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="10" letter-spacing="1.2">RUNNING  ✓</text>
-  <path d="M20 48H44M32 36V60M476 352H500M488 340V364" stroke="#0A0A0A"/>
 </svg>

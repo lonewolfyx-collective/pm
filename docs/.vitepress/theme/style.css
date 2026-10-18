@@ -299,6 +299,7 @@ button {
 .VPHero .image-container {
   width: 100%;
   height: auto;
+  transform: none;
 }
 
 .VPHero .image-bg {
@@ -307,12 +308,11 @@ button {
 
 .VPHero .image-src {
   position: relative;
+  top: auto;
+  left: auto;
   width: 100%;
   height: auto;
   max-width: 32rem;
-  border: 1px solid var(--pm-border);
-  box-shadow: 0.75rem 0.75rem 0 var(--vp-c-bg),
-    0.75rem 0.75rem 0 1px var(--pm-border);
   transform: none;
 }
 
