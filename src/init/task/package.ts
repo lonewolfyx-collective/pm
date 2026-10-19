@@ -62,7 +62,7 @@ export const resolvePackageJSON: CommandHandler<typeof initArgs> = async (config
   }
 
   packageJSON['simple-git-hooks'] ??= {
-    'pre-commit': 'npx nano-staged',
+    'pre-commit': 'npx lint-staged',
     'commit-msg': 'npx verify-git-commit',
   }
   packageJSON['lint-staged'] = {
