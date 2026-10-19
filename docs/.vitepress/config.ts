@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vitepress'
 import { markdown as zhMarkdown } from '../content/config.ts'
 
@@ -15,6 +16,9 @@ export default defineConfig({
   },
   markdown: {
     lineNumbers: true,
+  },
+  vite: {
+    plugins: [tailwindcss()],
   },
   themeConfig: {
     aside: false,

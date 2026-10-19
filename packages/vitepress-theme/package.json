@@ -1,0 +1,23 @@
+{
+  "name": "@lonewolfyx/vitepress-theme",
+  "type": "module",
+  "private": true,
+  "description": "A fully custom VitePress theme inspired by Furifont",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "vitepress": "^2.0.0-alpha.20",
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "minisearch": "^7.2.0"
+  },
+  "devDependencies": {
+    "vitepress": "^2.0.0-alpha.20",
+    "vue": "^3.5.41"
+  }
+}
