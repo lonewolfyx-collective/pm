@@ -22,7 +22,7 @@ catalog -u --cwd /path/to/workspace
 - Verify that the package name exactly matches `package.json`.
 - Verify that `pnpm-workspace.yaml#packages` includes the child project and that no `!` rule excludes it.
 
-## run, dev, or build Selects the Wrong Project
+## run, dev, build, lint, or fix Selects the Wrong Project
 
 These commands resolve `package.json` from the working directory and execute scripts in that directory. Check the current directory or specify the target project with `--cwd`:
 

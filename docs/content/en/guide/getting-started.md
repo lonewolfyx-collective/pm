@@ -17,6 +17,8 @@ remove --help
 run --help
 dev --help
 build --help
+lint --help
+fix --help
 clearn --help
 init --help
 ```
@@ -59,7 +61,7 @@ run
 run docs
 ```
 
-Without a keyword, the selector always opens. With a keyword, a single match runs automatically, multiple matches open a selector, and no matches produce an error. Missing or empty scripts produce a warning and end the command. `dev` and `build` use the fixed keywords `dev` and `build`; see [Run Scripts](/en/commands/scripts).
+Without a keyword, the selector always opens. With a keyword, a single match runs automatically, multiple matches open a selector, and no matches produce an error. Missing or empty scripts produce a warning and end the command. `dev`, `build`, `lint`, and `fix` use their command names as fixed keywords; see [Run Scripts](/en/commands/scripts).
 
 ## Set the Working Directory
 
@@ -75,7 +77,7 @@ clearn --cwd ./apps/web
 
 Relative paths are resolved from the terminal's current directory. Workspace discovery searches upward from the resulting directory for `pnpm-workspace.yaml`.
 
-`run`, `dev`, and `build` resolve `package.json` from the specified working directory and execute the selected script in that directory.
+`run`, `dev`, `build`, `lint`, and `fix` resolve `package.json` from the specified working directory and execute the selected script in that directory.
 
 ## Next Steps
 

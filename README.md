@@ -18,6 +18,8 @@ The package provides these commands:
 | `run` | Select a package script, optionally filtering by keyword |
 | `dev` | Find and run a script matching `dev` |
 | `build` | Find and run a script matching `build` |
+| `lint` | Find and run a script matching `lint` |
+| `fix` | Find and run a script matching `fix` |
 | `clearn` | Delete dependency directories, build output, and caches |
 | `init` | Generate a project or create a workspace package manifest |
 
@@ -37,7 +39,7 @@ Workspace discovery searches upward for `pnpm-workspace.yaml`. Projects are matc
 
 Catalog operations inspect the current project's `package.json` and the matched workspace projects. They consider `dependencies`, `devDependencies`, `optionalDependencies`, and `peerDependencies`, along with catalog references in workspace `overrides`.
 
-`run`, `dev`, and `build` resolve `package.json` from the working directory and execute the selected script in that directory.
+`run`, `dev`, `build`, `lint`, and `fix` resolve `package.json` from the working directory and execute the selected script in that directory.
 
 ## Install and add packages
 
@@ -231,11 +233,13 @@ run docs
 run docs --cwd ./apps/web
 dev
 build
+lint
+fix
 ```
 
 `run [keyword]` selects a script from `package.json#scripts`. Without a keyword, it opens a selector with all scripts, even when only one script exists. With a keyword, it uses fuzzy matching: `run docs` may match `dev:docs` and `build:docs`.
 
-`dev` and `build` use `dev` and `build` as their respective keywords. With a keyword, a single match runs automatically, multiple matches open a selector, and no matches produce an error. Missing or empty `scripts` produce a warning and end the command.
+`dev`, `build`, `lint`, and `fix` use their command names as keywords. With a keyword, a single match runs automatically, multiple matches open a selector, and no matches produce an error. Missing or empty `scripts` produce a warning and end the command.
 
 The selector shows each script's name and command. Cancelling selection produces a non-zero exit code. The chosen script runs through the detected package manager as `<package-manager> run <script>`.
 

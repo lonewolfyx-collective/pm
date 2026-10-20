@@ -30,6 +30,8 @@
 | Match scripts in a specified project | `run docs --cwd ./apps/web` |
 | Select a development script | `dev` |
 | Select a build script | `build` |
+| Select a lint script | `lint` |
+| Select a fix script | `fix` |
 | Clean generated output and caches | `clearn` |
 | Clean lockfiles too | `clearn --lockfile` |
 | Initialize package configuration | `init` |
