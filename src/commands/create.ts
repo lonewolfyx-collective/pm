@@ -1,22 +1,10 @@
-import { cancel, isCancel, outro, select, spinner, text } from '@clack/prompts'
+import { cancel, isCancel, outro, text } from '@clack/prompts'
 import { ProjectBuilder } from '@/create/index.ts'
 import { runCommand } from '@/run.ts'
-import { fetchTemplates } from '@/template.ts'
+import { choicesTemplate } from '@/template.ts'
 
 runCommand('create', async (config) => {
-  const templatesSpinner = spinner()
-  templatesSpinner.start('Loading available templates')
-  const availableTemplates = await fetchTemplates()
-  templatesSpinner.stop('Templates loaded')
-
-  const templateName = await select({
-    message: 'Which template would you like to use?',
-    options: Object.entries(availableTemplates).map(([value, data]) => ({
-      value,
-      label: value,
-      hint: data.description,
-    })),
-  })
+  const { templates: availableTemplates, name: templateName } = await choicesTemplate()
 
   if (isCancel(templateName)) {
     cancel('Operation cancelled.')
@@ -37,10 +25,10 @@ runCommand('create', async (config) => {
     process.exit(1)
   }
 
-  await new ProjectBuilder(config.cwd)
+  await new ProjectBuilder(config)
     .withTemplate(templateName, template)
     .withDirectory(dir)
-    .build()
+    .initialProject()
 
   outro('✨ Happy building!')
 })

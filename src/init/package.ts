@@ -1,60 +1,40 @@
 import type { initArgs } from '@/args/init.ts'
 import type { CommandHandler } from '@/types.ts'
-import { access } from 'node:fs/promises'
-import { join } from 'node:path'
-import { cancel, confirm, isCancel, outro, text } from '@clack/prompts'
-import { choicesTemplate, create, git } from '@lonewolfyx/create'
-import { clearDirectory } from '@/utils.ts'
+import { cancel, isCancel, outro, text } from '@clack/prompts'
+import { green } from 'ansis'
+import { ProjectBuilder } from '@/create'
+import { choicesTemplate } from '@/template.ts'
 
 export const createProject: CommandHandler<typeof initArgs> = async (config, ctx) => {
-  const projectPath = join(config.cwd, ctx.args.package)
+  const { templates: availableTemplates, name: templateName } = await choicesTemplate()
 
-  const packageJsonExists = await access(join(config.cwd, 'package.json'))
-    .then(() => true)
-    .catch(() => false)
-
-  if (packageJsonExists) {
-    const shouldOverwrite = await confirm({
-      message: 'A project already exists in the current directory. Overwrite it with a new project? (All files in the current directory will be deleted.)',
-    })
-
-    if (isCancel(shouldOverwrite) || !shouldOverwrite) {
-      outro('Operation cancelled.')
-      return
-    }
-
-    await clearDirectory(config.cwd)
-  }
-
-  const template = await choicesTemplate()
-
-  if (isCancel(template)) {
-    cancel('Operation cancelled.')
-    return process.exit(0)
-  }
-
-  const description = await text({
-    message: 'Description',
-    placeholder: '',
-    defaultValue: '',
-  }) as string
-
-  if (isCancel(description)) {
+  if (isCancel(templateName)) {
     cancel('Operation cancelled.')
     process.exit(1)
   }
 
-  const context = {
-    cwd: config.cwd,
-    name: ctx.args.package,
-    projectPath,
-    description,
-    template,
+  const template = availableTemplates[templateName]!
+
+  const defaultDir = ctx.args.package || template.defaultDir
+  const dir = await text({
+    message: 'Where would you like to create your project?',
+    placeholder: `./${defaultDir}`,
+    defaultValue: defaultDir,
+  })
+
+  if (isCancel(dir)) {
+    cancel('Operation cancelled.')
+    process.exit(1)
   }
 
-  if (ctx.args.git) {
-    await git(context)
-  }
+  const step = new ProjectBuilder(config)
+    .withTemplate(templateName, template)
+    .withDirectory(dir)
 
-  await create(context)
+  await step.withPackageDescription()
+  await step.initialProject()
+  await step.withGit(ctx.args.git)
+  await step.replaceTemplateKeywords()
+
+  outro(`🚀  Successfully created project ${green(ctx.args.package)}`)
 }
