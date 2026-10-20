@@ -1,5 +1,6 @@
 import type { PnpmWorkspaceSpecification } from '@schemastore/pnpm-workspace'
 import type { ArgsDef, CommandContext, CommandMeta as CommandMetaData } from 'citty'
+import type { TemplateInfo } from 'giget'
 import type { DetectResult } from 'package-manager-detector'
 import type { PackageJson } from 'pkg-types'
 import type { Document, YAMLMap } from 'yaml'
@@ -69,4 +70,14 @@ export interface CatalogOption {
   hint: string
   // Exact package names or prefixes ending in *, e.g. @eslint/*.
   packages?: string[]
+}
+
+export interface GithubTemplateData {
+  name: string
+  download_url: string
+}
+
+export type TemplateData = Exclude<TemplateInfo, ['tar']> & {
+  tar: string
+  description: string
 }
