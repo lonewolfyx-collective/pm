@@ -1,6 +1,6 @@
-# run / dev / build: Run Scripts
+# run / dev / build / lint / fix: Run Scripts
 
-`run`, `dev`, and `build` find scripts in `package.json#scripts`, then run the selected script through the detected package manager. Keywords use fuzzy matching.
+`run`, `dev`, `build`, `lint`, and `fix` find scripts in `package.json#scripts`, then run the selected script through the detected package manager. Keywords use fuzzy matching.
 
 ## Usage
 
@@ -9,6 +9,8 @@ run
 run docs
 dev
 build
+lint
+fix
 ```
 
 Given this manifest:
@@ -19,7 +21,9 @@ Given this manifest:
     "dev": "vite",
     "dev:docs": "vitepress dev docs",
     "build": "tsdown",
-    "build:docs": "vitepress build docs"
+    "build:docs": "vitepress build docs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   }
 }
 ```
@@ -28,7 +32,9 @@ Given this manifest:
 - `run docs` matches `dev:docs` and `build:docs`, then opens a selector.
 - `dev` matches `dev` and `dev:docs`, then opens a selector.
 - `build` matches `build` and `build:docs`, then opens a selector.
-- With a keyword or with `dev` and `build`, a single match runs automatically.
+- `lint` matches `lint` and `lint:fix`, then opens a selector.
+- `fix` matches only `lint:fix` and runs it automatically.
+- With a keyword or with `dev`, `build`, `lint`, and `fix`, a single match runs automatically.
 - Missing or empty `scripts` produce a warning and end the command.
 - A keyword with no matches produces an error.
 - Cancelling the selector produces a non-zero exit code.

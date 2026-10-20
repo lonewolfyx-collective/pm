@@ -28,7 +28,7 @@ export default defineAdditionalConfig({
           { text: 'ni: Install Dependencies', link: '/en/commands/ni' },
           { text: 'remove: Remove Dependencies', link: '/en/commands/remove' },
           { text: 'catalog: Manage Catalogs', link: '/en/commands/catalog' },
-          { text: 'run / dev / build: Run Scripts', link: '/en/commands/scripts' },
+          { text: 'run / dev / build / lint / fix: Run Scripts', link: '/en/commands/scripts' },
           { text: 'clearn: Clean Artifacts', link: '/en/commands/clearn' },
           { text: 'init: Initialize Projects', link: '/en/commands/init' },
         ],

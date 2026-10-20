@@ -65,7 +65,7 @@ export default defineAdditionalConfig({
           { text: 'ni：安装依赖', link: '/commands/ni' },
           { text: 'remove：移除依赖', link: '/commands/remove' },
           { text: 'catalog：管理目录', link: '/commands/catalog' },
-          { text: 'run / dev / build：运行脚本', link: '/commands/scripts' },
+          { text: 'run / dev / build / lint / fix：运行脚本', link: '/commands/scripts' },
           { text: 'clearn：清理产物', link: '/commands/clearn' },
           { text: 'init：初始化项目', link: '/commands/init' },
         ],

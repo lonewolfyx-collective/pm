@@ -21,7 +21,7 @@ hero:
 
 features:
   - title: Package-manager aware
-    details: Detects the package manager used by the current project and translates ni, remove, run, dev, and build into the appropriate commands.
+    details: Detects the package manager used by the current project and translates ni, remove, run, dev, build, lint, and fix into the appropriate commands.
   - title: pnpm Catalog workflows
     details: Classify, move, rename, merge, remove, and clean catalog entries while keeping package.json references aligned.
   - title: Monorepo friendly
@@ -40,6 +40,8 @@ features:
 | [`run`](/en/commands/scripts) | Select a package script, optionally filtering by keyword |
 | [`dev`](/en/commands/scripts) | Fuzzy-find and run a script whose name matches `dev` |
 | [`build`](/en/commands/scripts) | Fuzzy-find and run a script whose name matches `build` |
+| [`lint`](/en/commands/scripts) | Fuzzy-find and run a script whose name matches `lint` |
+| [`fix`](/en/commands/scripts) | Fuzzy-find and run a script whose name matches `fix` |
 | [`clearn`](/en/commands/clearn) | Recursively delete dependency directories, build output, and caches |
 | [`init`](/en/commands/init) | Initialize package configuration, project templates, workspace packages, or GitHub workflows |
 

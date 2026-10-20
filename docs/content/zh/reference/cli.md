@@ -30,6 +30,8 @@
 | 在指定项目中匹配脚本 | `run docs --cwd ./apps/web` |
 | 选择开发脚本 | `dev` |
 | 选择构建脚本 | `build` |
+| 选择检查脚本 | `lint` |
+| 选择修复脚本 | `fix` |
 | 清理产物和缓存 | `clearn` |
 | 连锁文件一起清理 | `clearn --lockfile` |
 | 初始化包配置 | `init` |

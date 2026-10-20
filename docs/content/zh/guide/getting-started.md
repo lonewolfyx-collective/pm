@@ -17,6 +17,8 @@ remove --help
 run --help
 dev --help
 build --help
+lint --help
+fix --help
 clearn --help
 init --help
 ```
@@ -59,7 +61,7 @@ run
 run docs
 ```
 
-不传关键词时始终显示选择器；传入关键词时，单个匹配直接执行，多个匹配供选择，没有匹配则报错。未配置脚本时警告并结束。`dev` 和 `build` 分别使用固定关键词 `dev` 和 `build`，详见[运行脚本](/commands/scripts)。
+不传关键词时始终显示选择器；传入关键词时，单个匹配直接执行，多个匹配供选择，没有匹配则报错。未配置脚本时警告并结束。`dev`、`build`、`lint` 和 `fix` 分别使用命令名作为固定关键词，详见[运行脚本](/commands/scripts)。
 
 ## 指定工作目录
 
@@ -75,7 +77,7 @@ clearn --cwd ./apps/web
 
 相对路径以当前终端目录为基准。工作区发现会从该目录开始向上查找 `pnpm-workspace.yaml`。
 
-`run`、`dev` 和 `build` 从指定工作目录解析 `package.json`，并在该目录执行选中的脚本。
+`run`、`dev`、`build`、`lint` 和 `fix` 从指定工作目录解析 `package.json`，并在该目录执行选中的脚本。
 
 ## 下一步
 

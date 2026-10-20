@@ -22,7 +22,7 @@ catalog -u --cwd /path/to/workspace
 - 确认目标包名与 `package.json` 完全一致；
 - 确认子项目被 `pnpm-workspace.yaml#packages` 包含，且没有被 `!` 规则排除。
 
-## run、dev 或 build 选错项目
+## run、dev、build、lint 或 fix 选错项目
 
 这些命令从工作目录解析 `package.json`，并在该目录执行脚本。确认当前目录是否正确，或通过 `--cwd` 指定目标项目：
 
