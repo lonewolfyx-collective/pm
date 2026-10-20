@@ -25,6 +25,9 @@
 | Rename or merge a catalog | `catalog rename --from build --to tooling` |
 | Remove a catalog | `catalog remove --catalog tooling` |
 | Clean unused catalog entries | `catalog -u` |
+| Select from all package scripts | `run` |
+| Fuzzy-match scripts by keyword | `run docs` |
+| Match scripts in a specified project | `run docs --cwd ./apps/web` |
 | Select a development script | `dev` |
 | Select a build script | `build` |
 | Clean generated output and caches | `clearn` |

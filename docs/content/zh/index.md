@@ -21,7 +21,7 @@ hero:
 
 features:
   - title: 包管理器感知
-    details: 自动检测当前项目使用的包管理器，并将 ni、remove、dev 和 build 转换成对应命令。
+    details: 自动检测当前项目使用的包管理器，并将 ni、remove、run、dev 和 build 转换成对应命令。
   - title: pnpm Catalog 工作流
     details: 支持依赖分类、迁移、重命名、合并、删除与无用项清理，并同步 package.json 引用。
   - title: Monorepo 友好
@@ -37,6 +37,7 @@ features:
 | [`ni`](/commands/ni) | 安装项目依赖，或添加生产、开发、可选、peer 依赖 |
 | [`remove`](/commands/remove) | 从一个或多个项目移除依赖，并清理失去引用的 catalog 项 |
 | [`catalog`](/commands/catalog) | 迁移、重命名、删除或清理 pnpm catalog |
+| [`run`](/commands/scripts) | 交互选择项目脚本，支持传入关键词模糊匹配 |
 | [`dev`](/commands/scripts) | 模糊查找并运行名称包含 `dev` 的脚本 |
 | [`build`](/commands/scripts) | 模糊查找并运行名称包含 `build` 的脚本 |
 | [`clearn`](/commands/clearn) | 递归删除依赖目录、构建产物和缓存 |

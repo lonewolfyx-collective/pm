@@ -22,16 +22,22 @@ catalog -u --cwd /path/to/workspace
 - 确认目标包名与 `package.json` 完全一致；
 - 确认子项目被 `pnpm-workspace.yaml#packages` 包含，且没有被 `!` 规则排除。
 
-## dev 或 build 选错项目
+## run、dev 或 build 选错项目
 
-当前版本从终端当前目录读取脚本。先进入目标目录再执行：
+这些命令从工作目录解析 `package.json`，并在该目录执行脚本。确认当前目录是否正确，或通过 `--cwd` 指定目标项目：
 
 ```bash
-cd apps/web
-dev
+run --cwd ./apps/web
+dev --cwd ./apps/web
 ```
 
-不要使用 `dev --cwd apps/web` 代替 `cd`。
+相对路径以当前终端目录为基准。
+
+## run 提示没有脚本或没有匹配结果
+
+- `package.json` 未配置 `scripts` 或其为空时，命令会警告并结束。
+- `run <关键词>` 没有匹配结果时会报错；执行不带关键词的 `run` 可以查看全部脚本。
+- 确认 `--cwd` 指向目标项目，且脚本定义在该项目的 `package.json#scripts` 中。
 
 ## Catalog 修改后锁文件没有变化
 

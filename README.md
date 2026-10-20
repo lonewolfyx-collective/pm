@@ -8,13 +8,14 @@ CLI tools for dependency management, pnpm catalogs, and workspace projects. Inst
 pnpm add -g @lonewolfyx/pm
 ```
 
-The package provides seven commands:
+The package provides these commands:
 
 | Command | Purpose |
 | --- | --- |
 | `ni` | Install dependencies or add packages, with optional catalog assignment |
 | `remove` | Remove dependencies from selected projects and clean unused catalog entries |
 | `catalog` | Move dependencies, rename catalogs, preview catalog removal, or clean unused entries |
+| `run` | Select a package script, optionally filtering by keyword |
 | `dev` | Find and run a script matching `dev` |
 | `build` | Find and run a script matching `build` |
 | `clearn` | Delete dependency directories, build output, and caches |
@@ -36,7 +37,7 @@ Workspace discovery searches upward for `pnpm-workspace.yaml`. Projects are matc
 
 Catalog operations inspect the current project's `package.json` and the matched workspace projects. They consider `dependencies`, `devDependencies`, `optionalDependencies`, and `peerDependencies`, along with catalog references in workspace `overrides`.
 
-`dev` and `build` currently read script names from the terminal's current directory. Run them from the project whose scripts you want to select.
+`run`, `dev`, and `build` resolve `package.json` from the working directory and execute the selected script in that directory.
 
 ## Install and add packages
 
@@ -222,16 +223,21 @@ The dependency field determines the uninstall flag. In a workspace, removal uses
 
 After uninstalling, the command removes affected catalog entries when no remaining project or matching override references them. Peer dependency references also count during this cleanup. Unreferenced affected catalogs and empty catalogs are cleaned up; if the workspace YAML changes, an install runs to sync the lockfile.
 
-## Run development and build scripts
+## Run package scripts
 
 ```bash
+run
+run docs
+run docs --cwd ./apps/web
 dev
 build
 ```
 
-These commands fuzzy-match script names in `package.json`. For example, `dev` may match `dev`, `dev:docs`, and `dev:play`.
+`run [keyword]` selects a script from `package.json#scripts`. Without a keyword, it opens a selector with all scripts, even when only one script exists. With a keyword, it uses fuzzy matching: `run docs` may match `dev:docs` and `build:docs`.
 
-A single match runs automatically. Multiple matches open a selector showing each script's command. No matches produce an error. The chosen script runs through the detected package manager.
+`dev` and `build` use `dev` and `build` as their respective keywords. With a keyword, a single match runs automatically, multiple matches open a selector, and no matches produce an error. Missing or empty `scripts` produce a warning and end the command.
+
+The selector shows each script's name and command. Cancelling selection produces a non-zero exit code. The chosen script runs through the detected package manager as `<package-manager> run <script>`.
 
 ## Clean generated files
 

@@ -22,16 +22,22 @@ catalog -u --cwd /path/to/workspace
 - Verify that the package name exactly matches `package.json`.
 - Verify that `pnpm-workspace.yaml#packages` includes the child project and that no `!` rule excludes it.
 
-## dev or build Selects the Wrong Project
+## run, dev, or build Selects the Wrong Project
 
-The current version reads scripts from the terminal's current directory. Enter the target project first:
+These commands resolve `package.json` from the working directory and execute scripts in that directory. Check the current directory or specify the target project with `--cwd`:
 
 ```bash
-cd apps/web
-dev
+run --cwd ./apps/web
+dev --cwd ./apps/web
 ```
 
-Do not use `dev --cwd apps/web` as a substitute for `cd`.
+Relative paths are resolved from the terminal's current directory.
+
+## run Reports No Scripts or No Matches
+
+- Missing or empty `scripts` in `package.json` produce a warning and end the command.
+- `run <keyword>` produces an error when nothing matches; use `run` without a keyword to list all scripts.
+- Check that `--cwd` points to the target project and that scripts are defined in its `package.json#scripts`.
 
 ## The Lockfile Did Not Change After a Catalog Command
 
