@@ -8,12 +8,13 @@ Install the CLI globally with pnpm:
 pnpm add -g @lonewolfyx/pm
 ```
 
-The package provides seven commands:
+The package provides these commands:
 
 ```bash
 ni --help
 catalog --help
 remove --help
+run --help
 dev --help
 build --help
 clearn --help
@@ -49,6 +50,17 @@ ni --peer vue
 
 The tool detects the package manager used by the project. In a pnpm project, for example, these calls resolve to `pnpm install` or `pnpm add`. Projects using npm, Yarn, or another supported package manager receive the corresponding command.
 
+## Run Package Scripts
+
+Use `run` to select a script from `package.json#scripts`, or supply a keyword for fuzzy matching:
+
+```bash
+run
+run docs
+```
+
+Without a keyword, the selector always opens. With a keyword, a single match runs automatically, multiple matches open a selector, and no matches produce an error. Missing or empty scripts produce a warning and end the command. `dev` and `build` use the fixed keywords `dev` and `build`; see [Run Scripts](/en/commands/scripts).
+
 ## Set the Working Directory
 
 Every command accepts `-c, --cwd <dir>`:
@@ -57,14 +69,13 @@ Every command accepts `-c, --cwd <dir>`:
 ni vite --cwd ./apps/web
 remove lodash --cwd ./packages/utils
 catalog move vite --cwd ./apps/web
+run docs --cwd ./apps/web
 clearn --cwd ./apps/web
 ```
 
 Relative paths are resolved from the terminal's current directory. Workspace discovery searches upward from the resulting directory for `pnpm-workspace.yaml`.
 
-::: warning Directory behavior of dev and build
-The current version reads candidate scripts from the terminal's current directory. To ensure the selected script and its execution directory match, `cd` into the target project before running `dev` or `build` instead of relying on `--cwd`.
-:::
+`run`, `dev`, and `build` resolve `package.json` from the specified working directory and execute the selected script in that directory.
 
 ## Next Steps
 

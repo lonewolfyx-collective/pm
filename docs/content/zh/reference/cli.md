@@ -25,6 +25,9 @@
 | 重命名或合并 catalog | `catalog rename --from build --to tooling` |
 | 删除 catalog | `catalog remove --catalog tooling` |
 | 清理无用 catalog 项 | `catalog -u` |
+| 从全部脚本中选择 | `run` |
+| 按关键词模糊匹配脚本 | `run docs` |
+| 在指定项目中匹配脚本 | `run docs --cwd ./apps/web` |
 | 选择开发脚本 | `dev` |
 | 选择构建脚本 | `build` |
 | 清理产物和缓存 | `clearn` |

@@ -23,6 +23,7 @@
     "./init": "./dist/init.mjs",
     "./ni": "./dist/ni.mjs",
     "./remove": "./dist/remove.mjs",
+    "./run": "./dist/run.mjs",
     "./package.json": "./package.json"
   },
   "bin": {
@@ -33,7 +34,8 @@
     "build": "./bin/build.mjs",
     "clearn": "./bin/clearn.mjs",
     "init": "./bin/init.mjs",
-    "create": "./bin/create.mjs"
+    "create": "./bin/create.mjs",
+    "run": "./bin/run.mjs"
   },
   "files": [
     "bin",

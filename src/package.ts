@@ -1,23 +1,30 @@
 import type { ResolveConfig } from '@/types.ts'
-import { cancel, isCancel, select } from '@clack/prompts'
+import { cancel, isCancel, log, select } from '@clack/prompts'
 import { Fzf } from 'fzf'
 import { resolveCommand } from 'package-manager-detector'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { executeCommand } from '@/run.ts'
 
 export async function runPackageScripts(keyword: string, config: ResolveConfig): Promise<void> {
-  const filename = await resolvePackageJSON()
+  const filename = await resolvePackageJSON(config.cwd)
   const pkg = await readPackageJSON(filename)
-  const scripts = new Fzf(Object.keys(pkg.scripts ?? {})).find(keyword)
+  const scriptNames = Object.keys(pkg.scripts ?? {})
+
+  if (!scriptNames.length) {
+    log.warn(`No scripts were found in ${filename}.`)
+    return
+  }
+
+  const scripts = new Fzf(scriptNames).find(keyword)
 
   if (!scripts.length) {
     throw new Error(`No scripts matching "${keyword}" were found in ${filename}.`)
   }
 
-  const script = scripts.length === 1
+  const script = keyword && scripts.length === 1
     ? scripts[0]!.item
     : await select({
-        message: `Select a ${keyword} script`,
+        message: keyword ? `Select a ${keyword} script` : 'Select a script',
         options: scripts.map(({ item }) => ({
           value: item,
           label: item,
@@ -26,7 +33,7 @@ export async function runPackageScripts(keyword: string, config: ResolveConfig):
       })
 
   if (isCancel(script)) {
-    cancel(`${keyword.charAt(0).toUpperCase()}${keyword.slice(1)} cancelled.`)
+    cancel(keyword ? `${keyword.charAt(0).toUpperCase()}${keyword.slice(1)} cancelled.` : 'Run cancelled.')
     process.exitCode = 1
     return
   }

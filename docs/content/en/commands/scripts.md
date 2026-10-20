@@ -1,10 +1,12 @@
-# dev / build: Run Scripts
+# run / dev / build: Run Scripts
 
-`dev` and `build` fuzzy-match script names in `package.json#scripts`, then run the selected script through the detected package manager.
+`run`, `dev`, and `build` find scripts in `package.json#scripts`, then run the selected script through the detected package manager. Keywords use fuzzy matching.
 
 ## Usage
 
 ```bash
+run
+run docs
 dev
 build
 ```
@@ -22,27 +24,22 @@ Given this manifest:
 }
 ```
 
+- `run` opens a selector with all scripts, even when only one script exists.
+- `run docs` matches `dev:docs` and `build:docs`, then opens a selector.
 - `dev` matches `dev` and `dev:docs`, then opens a selector.
 - `build` matches `build` and `build:docs`, then opens a selector.
-- A single match runs automatically.
-- No matches produce an error.
+- With a keyword or with `dev` and `build`, a single match runs automatically.
+- Missing or empty `scripts` produce a warning and end the command.
+- A keyword with no matches produces an error.
 - Cancelling the selector produces a non-zero exit code.
 
 The selector shows both the script name and its command. Once selected, the tool runs the equivalent of `<package-manager> run <script>`.
 
-## Working-directory Limitation
+## Working Directory
 
-The current implementation resolves `package.json` from the terminal's current directory while the child process uses the directory supplied through `--cwd`. If those directories differ, a script can be selected from project A but executed in project B.
-
-Use:
+By default, `package.json` is resolved from the terminal's current directory. With `--cwd`, scripts are read and executed using the specified directory:
 
 ```bash
-cd ./apps/web
-dev
-```
-
-Avoid:
-
-```bash
+run --cwd ./apps/web
 dev --cwd ./apps/web
 ```

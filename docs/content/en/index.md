@@ -21,7 +21,7 @@ hero:
 
 features:
   - title: Package-manager aware
-    details: Detects the package manager used by the current project and translates ni, remove, dev, and build into the appropriate commands.
+    details: Detects the package manager used by the current project and translates ni, remove, run, dev, and build into the appropriate commands.
   - title: pnpm Catalog workflows
     details: Classify, move, rename, merge, remove, and clean catalog entries while keeping package.json references aligned.
   - title: Monorepo friendly
@@ -37,6 +37,7 @@ features:
 | [`ni`](/en/commands/ni) | Install project dependencies or add production, development, optional, and peer dependencies |
 | [`remove`](/en/commands/remove) | Remove dependencies from one or more projects and clean unreferenced catalog entries |
 | [`catalog`](/en/commands/catalog) | Move, rename, remove, or clean pnpm catalogs |
+| [`run`](/en/commands/scripts) | Select a package script, optionally filtering by keyword |
 | [`dev`](/en/commands/scripts) | Fuzzy-find and run a script whose name matches `dev` |
 | [`build`](/en/commands/scripts) | Fuzzy-find and run a script whose name matches `build` |
 | [`clearn`](/en/commands/clearn) | Recursively delete dependency directories, build output, and caches |
