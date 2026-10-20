@@ -96,7 +96,7 @@
     "*": "eslint --fix"
   },
   "inlinedDependencies": {
-    "@lonewolfyx/create": "0.0.12",
+    "@lonewolfyx/create": "0.0.13",
     "@schemastore/pnpm-workspace": "1.0.13",
     "defu": "6.1.7",
     "giget": [
