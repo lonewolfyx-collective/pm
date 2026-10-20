@@ -81,3 +81,8 @@ export type TemplateData = Exclude<TemplateInfo, ['tar']> & {
   tar: string
   description: string
 }
+
+export interface ResolveTemplate {
+  templates: Record<string, TemplateData>
+  name: string
+}

@@ -271,13 +271,28 @@ dist               build              out
 
 ## Initialize a project
 
-### Generate a project in the current directory
+### Initialize package configuration in the current directory
 
 ```bash
 init
 ```
 
-This runs `npx -y @lonewolfyx/setup` in the working directory. If an existing `package.json` is found, it asks before deleting the directory's contents to generate a replacement project; `.git` is preserved.
+This generates `.gitignore`, runs `pnpm init`, installs the standard development dependencies, and configures `package.json` and ESLint. If an existing `package.json` is found, it deletes the working directory's contents without confirmation; `.git` is preserved.
+
+### Create a project from a template
+
+```bash
+init my-project
+init my-project --git
+```
+
+Choose a template, choose a target directory, and enter a description. The directory defaults to the positional project name; relative paths are resolved from the working directory or `--cwd`.
+
+The command downloads the template and replaces `pkg-placeholder` and `_description_` in its `package.json` and `README.md` files with the target directory's last segment and the entered description. Choosing `apps/web` produces the name `web`; choosing `@scope/foo` produces `foo`, so edit `package.json#name` afterwards if you need a scoped package name.
+
+**Existing target directories are cleared without confirmation, preserving only `.git`.** This applies even when the target has no `package.json`. Selecting `.` clears the working directory; choose a new directory or back up the target first.
+
+`--git` initializes Git in the target directory after download. Dependencies are not installed automatically; enter the target directory and install them with the package manager required by the selected template.
 
 ### Create a workspace package
 

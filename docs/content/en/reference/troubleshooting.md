@@ -60,7 +60,11 @@ Lockfiles are removed only when `--lockfile` is present and a package manager is
 
 ## Is init Safe in an Existing Project?
 
-Bare `init` is not safe for an existing project: when it finds `package.json`, it clears everything except `.git`. Template mode (`init <name>`) prompts first, but confirmation still clears the current working directory. Use an empty directory or commit and back up your work first.
+Bare `init` is not safe for an existing project: when it finds `package.json`, it immediately clears everything in the working directory except `.git`.
+
+Template mode (`init <name>`) prompts for a target directory, defaulting to `<name>`. If the target directory already exists, the command clears everything in it except `.git`, without an overwrite confirmation or a check for `package.json`. Relative paths are resolved from the working directory, or the directory specified by `--cwd`; choosing `.` clears the working directory. Choose a new directory or back up the target directory first.
+
+Template mode does not install dependencies automatically. Enter the target directory after generation and install dependencies as required by the template. Pass `--git` if you also need to initialize Git.
 
 ## Report an Issue
 

@@ -36,9 +36,15 @@ init my-project
 init my-project --git
 ```
 
-The command asks you to choose a template and enter a description, then generates the project through its bundled project creator. `--git` also initializes Git.
+The command asks you to choose a template, choose a target directory, and enter a description, then downloads the template. The target directory defaults to the positional project name and can be changed at the prompt. Relative paths are resolved from the working directory, which can be set with `--cwd`.
 
-If the current working directory contains `package.json`, the command asks before overwriting. Confirming clears the current directory except `.git`; cancelling leaves it unchanged.
+After generation, `pkg-placeholder` in the target directory's `package.json` and `README.md` files is replaced with the last segment of the target directory, and `_description_` is replaced with the entered description. For example, choosing `apps/web` produces the name `web`; choosing `@scope/foo` produces `foo` without the `@scope`. To use a scoped package name, edit `package.json#name` after generation.
+
+`--git` initializes Git in the target directory after downloading the template. Without it, the command does not run `git init`. This flow does not install dependencies automatically; enter the target directory afterwards and install them with the package manager required by the selected template.
+
+::: danger Existing target directory contents are deleted
+If the target directory already exists, the command deletes everything in it except `.git` before downloading the template, without another prompt or a check for `package.json`. Choose a new directory or back up the target directory first. An existing `package.json` in the working directory does not itself trigger cleanup, but selecting `.` as the target clears the working directory.
+:::
 
 ## Create a Monorepo Package
 
@@ -69,7 +75,7 @@ Run this mode from a Git repository with a valid `origin`, and commit or back up
 
 | Option | Description |
 | --- | --- |
-| `<package>` | Project or workspace package name |
+| `<package>` | Default target directory for a template project, or workspace package name |
 | `--monorepo` | Create a workspace package |
 | `--github`, `--ci`, `--ci-cd`, `--cd` | Add GitHub CI/CD files |
 | `--git` | Initialize Git while generating a template project |
