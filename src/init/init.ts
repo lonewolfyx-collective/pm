@@ -1,5 +1,6 @@
 import type { initArgs } from '@/args/init.ts'
 import type { CommandHandler } from '@/types.ts'
+import { outro } from '@clack/prompts'
 import { createEslintConfig, createGitignore, createPackageJSON, resolvePackageJSON } from '@/init/task'
 import { schedule } from '@/schedule.ts'
 import { clearDirectory, isHasPackageJson } from '@/utils.ts'
@@ -31,4 +32,6 @@ export const initPackage: CommandHandler<typeof initArgs> = async (config, ctx):
       'Generated the ESLint configuration and formatted project files',
     )
     .done()
+
+  outro('✨ Happy create project!')
 }
