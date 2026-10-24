@@ -97,7 +97,7 @@ export const resolveConfig = async <T extends ArgsDef = CommandArgs>(options: Op
 
   return {
     cwd: options.cwd,
-    detect: detectPM!,
+    detect: detectPM ?? { name: 'npm', agent: 'npm' },
     packages,
     monorepo: await resolveMonorepo(options.cwd),
   }
