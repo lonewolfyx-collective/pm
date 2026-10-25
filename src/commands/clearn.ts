@@ -4,8 +4,9 @@ import { cyan, red, yellow } from 'ansis'
 import { glob } from 'glob'
 import { LOCKS } from 'package-manager-detector'
 import { rimraf } from 'rimraf'
-import { lockfile } from '@/args/lockfile.ts'
+import { clearArgs } from '@/args/clear.ts'
 import { runCommand } from '@/run.ts'
+import { clearDirectory } from '@/utils.ts'
 
 const ignoredDirectories = [
   'node_modules',
@@ -33,8 +34,14 @@ const ignoredDirectories = [
   'Carthage',
 ]
 
-runCommand('clearn', lockfile, async (config, ctx) => {
+runCommand('clearn', clearArgs, async (config, ctx) => {
   const cwd = resolve(config.cwd)
+
+  if (ctx.args.all) {
+    await clearDirectory(config.cwd)
+    return
+  }
+
   const agent = config.detect?.agent
   const manager = agent === 'pnpm-rush' ? 'pnpm' : agent?.split('@')[0]
   const lockFiles = new Set(ctx.args.lockfile
