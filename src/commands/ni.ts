@@ -138,6 +138,13 @@ runCommand('ni', {
       args,
     )!
 
-    await executeCommand(resolvedCommand, config)
+    const { ignoredBuilds } = await executeCommand(resolvedCommand, config)
+
+    if (ignoredBuilds.length) {
+      await executeCommand({
+        command: resolvedCommand.command,
+        args: ['approve-builds', '--all'],
+      }, config)
+    }
   }
 })

@@ -61,3 +61,19 @@ export async function clearDirectory(dirPath: string): Promise<void> {
     await rm(path.join(dirPath, entry), { recursive: true, force: true })
   }
 }
+
+const TRAILING_DOT_RE = /\.$/
+const IGNORED_BUILDS_RE = /Ignored build scripts:\s*([^\n│]+)/
+// eslint-disable-next-line no-control-regex
+const ANSI_RE = /\u001B\[[\d;]*[A-Z]/gi
+
+export function getIgnoredBuilds(output: string): string[] {
+  const match = output.replace(ANSI_RE, '').match(IGNORED_BUILDS_RE)
+  if (!match?.[1]) {
+    return []
+  }
+  return match[1]
+    .split(',')
+    .map(name => name.trim().replace(TRAILING_DOT_RE, ''))
+    .filter(Boolean)
+}
