@@ -54,13 +54,14 @@ export async function executeCommand(command: ResolvedCommand, config: ResolveCo
   const captureBuilds = config.detect.name === 'pnpm'
     && ['pnpm', 'rush-pnpm'].includes(command.command)
     && ['add', 'install', 'i'].includes(command.args[0] ?? '')
+  const forwardOutput = captureBuilds && stdio === 'inherit'
 
   const proc = x(
     command.command,
     command.args,
     {
       nodeOptions: {
-        stdio: captureBuilds && stdio === 'inherit' ? ['inherit', 'pipe', 'pipe'] : stdio,
+        stdio: forwardOutput ? ['inherit', 'pipe', 'pipe'] : stdio,
         cwd: config.cwd,
       },
       nodePath: false,
@@ -72,16 +73,26 @@ export async function executeCommand(command: ResolvedCommand, config: ResolveCo
   const onData = (chunk: Buffer | string): void => {
     chunks.push(String(chunk))
   }
-  proc.process?.stdout?.on('data', onData)
-  proc.process?.stderr?.on('data', onData)
-  proc.process?.stdout?.on('data', (chunk: Buffer | string): boolean => process.stdout.write(chunk))
-  proc.process?.stderr?.on('data', (chunk: Buffer | string): boolean => process.stderr.write(chunk))
+  if (captureBuilds) {
+    proc.process?.stdout?.on('data', onData)
+    proc.process?.stderr?.on('data', onData)
+  }
 
-  process.once('SIGINT', async () => {
+  if (forwardOutput) {
+    proc.process?.stdout?.on('data', (chunk: Buffer | string): boolean => process.stdout.write(chunk))
+    proc.process?.stderr?.on('data', (chunk: Buffer | string): boolean => process.stderr.write(chunk))
+  }
+
+  const onInterrupt = async (): Promise<void> => {
     // Ensure the proc finishes cleanup before exiting
-    await proc
-    process.exit(proc.exitCode)
-  })
+    try {
+      await proc
+    }
+    finally {
+      process.exit(proc.exitCode ?? 1)
+    }
+  }
+  process.once('SIGINT', onInterrupt)
 
   let buildError: NonZeroExitError | undefined
   try {
@@ -92,6 +103,9 @@ export async function executeCommand(command: ResolvedCommand, config: ResolveCo
       throw error
     }
     buildError = error
+  }
+  finally {
+    process.off('SIGINT', onInterrupt)
   }
 
   const output = stripVTControlCharacters(chunks.join(''))
