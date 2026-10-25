@@ -20,6 +20,7 @@ build --help
 lint --help
 fix --help
 clearn --help
+create --help
 init --help
 ```
 
@@ -52,6 +53,16 @@ ni --peer vue
 
 工具会检测项目使用的包管理器。例如在 pnpm 项目中，上述命令最终会调用 `pnpm install` 或 `pnpm add`；在 npm、Yarn 等受检测器支持的项目中则调用相应命令。
 
+未检测到包管理器时默认使用 npm。使用 pnpm 时，`ni` 检测到被忽略的构建脚本会自动执行 `approve-builds --all`，详见[构建脚本审批](/commands/ni#pnpm-构建脚本审批)。
+
+## 从模板创建项目
+
+```bash
+create
+```
+
+交互选择模板并输入目标目录后，命令会下载模板。需要填写描述、替换模板占位符或初始化 Git 时，使用 `init my-project --git`。两种方式都需要网络连接，且不会自动安装依赖；已有目标目录会被清空，仅保留 `.git`，详见 [`create`](/commands/create) 和 [`init`](/commands/init)。
+
 ## 运行项目脚本
 
 执行 `run` 从 `package.json#scripts` 中选择脚本，或传入关键词进行模糊匹配：
@@ -69,7 +80,7 @@ run docs
 
 ```bash
 ni vite --cwd ./apps/web
-remove lodash --cwd ./packages/utils
+remove lodash --cwd ./my-monorepo
 catalog move vite --cwd ./apps/web
 run docs --cwd ./apps/web
 clearn --cwd ./apps/web

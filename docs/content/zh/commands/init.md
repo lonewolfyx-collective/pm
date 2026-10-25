@@ -9,6 +9,8 @@
 
 同时传入多种模式时，只执行优先级最高的一种。
 
+如果只需要选择并下载模板，可以使用 [`create`](./create)。`init <name>` 会额外填写描述、替换模板占位符，并可通过 `--git` 初始化 Git。
+
 ## 初始化包配置
 
 ```bash
@@ -28,6 +30,8 @@ init
 :::
 
 此流程需要网络连接，因为会获取 `.gitignore` 并安装依赖。
+
+此模式直接调用 pnpm，需要本机可用的 `pnpm` 命令，不受包管理器检测结果影响。生成配置使用内置作者和 Git hooks 约定，完成后应检查 `package.json`；其中包含 `prepublishOnly: pnpm build`，但不会生成构建脚本或构建配置。
 
 ## 从模板创建项目
 
@@ -56,6 +60,8 @@ init --monorepo
 工具读取 `pnpm-workspace.yaml#packages` 并列出可用工作区目录。没有工作区时，可以创建一个；也可以选择自定义目录，自定义目录会以 `<folder>/*` 写入 workspace 配置。
 
 未提供包名时会交互输入。随后创建 `<workspace>/<package>/package.json`，使用内置 ESM 库模板。此模式只创建目录和清单，不生成源码，也不安装依赖。
+
+清单内置 `packageManager: pnpm@12.8.1`、作者和仓库信息，并声明 `dist/index.mjs` 与 `dist/index.d.mts` 入口。创建后请按项目需要调整元数据并补充源码和构建配置；如果目标 `package.json` 已存在，会直接覆盖。
 
 ::: info 自定义目录限制
 交互输入只接受单层目录名，不接受 `.`、`..`、斜杠或反斜杠。

@@ -18,6 +18,8 @@ ni --peer vue
 
 在 pnpm 项目中，它们分别对应 `pnpm install`、`pnpm add`，以及带 `-D`、`-o` 或 `--save-peer` 的添加操作。
 
+未检测到包管理器时，默认使用 npm。
+
 ## 选项
 
 | 选项 | 说明 |
@@ -51,6 +53,12 @@ ni --catalog -D eslint tsdown vite vitest
 ```bash
 ni --catalog-name test -D vitest @vitest/coverage-v8
 ```
+
+## pnpm 构建脚本审批
+
+执行 pnpm 安装或添加依赖时，工具会捕获输出中的 `Ignored build scripts:` 包列表。检测到该列表后，会自动调用同一个可执行程序运行 `approve-builds --all`，不再提供额外的交互确认。
+
+这会批准所有待审批的依赖构建脚本，范围不限于本次指定的包。若安装以 `ERR_PNPM_IGNORED_BUILDS` 失败且同时输出了可解析的包列表，工具仍会继续执行审批；其他安装错误会继续抛出。
 
 ## 参数约束
 

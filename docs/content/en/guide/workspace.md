@@ -46,9 +46,11 @@ The `remove` command only selects candidates from the first three fields, so it 
 
 ## Root and Child Projects
 
-The root `package.json` for the working directory is scanned together with discovered workspace projects. During `remove`:
+The `package.json` resolved from the working directory is treated as the current project and scanned together with discovered workspace projects. It is not necessarily the root manifest beside `pnpm-workspace.yaml`: running from a child project does not automatically add the workspace root manifest. Run from the workspace root, or point `--cwd` there, to scan both the root and child projects.
 
-- the root project uses the package manager's workspace-root option;
+During `remove`:
+
+- the current project uses the package manager's workspace-root option, so set the working directory to the workspace root when removing monorepo dependencies;
 - child projects are filtered by package name;
 - a dependency declared by one project is selected automatically;
 - a dependency declared by multiple projects requires an interactive selection before any changes begin.

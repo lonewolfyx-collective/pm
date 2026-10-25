@@ -11,7 +11,7 @@ remove [options] <package...>
 ```bash
 remove vite
 remove eslint tsdown
-remove lodash --cwd ./apps/web
+remove lodash --cwd ./my-monorepo
 ```
 
 Every package must appear in a project's `dependencies`, `devDependencies`, or `optionalDependencies`; otherwise the command fails. A package declared only in `peerDependencies` is not a removal candidate.
@@ -34,6 +34,8 @@ When a dependency appears in exactly one field, the corresponding dependency-typ
 - the current root project uses the workspace-root option;
 - child projects use `-F <package-name>`.
 
+In a monorepo, run from the workspace root or point `--cwd` there. The current implementation treats the manifest resolved from the working directory as the root project; see [Root and Child Projects](/en/guide/workspace#root-and-child-projects).
+
 ## Catalog Cleanup
 
 After uninstalling, the tool checks affected catalog entries:
@@ -41,10 +43,10 @@ After uninstalling, the tool checks affected catalog entries:
 1. Scan the root project and discovered workspace projects.
 2. Treat all four dependency fields and matching workspace `overrides` as references.
 3. Delete affected entries that no longer have references.
-4. Delete empty catalogs that have no references.
+4. Delete affected catalogs that have no remaining references, including their other entries, and clean unreferenced empty named catalogs.
 5. Run an install to synchronize the lockfile if workspace YAML changed.
 
-Cleanup is limited to catalog dependencies affected by this removal. Use [`catalog -u`](./catalog#clean-unused-entries) for a full unused-entry scan.
+Individual entry cleanup targets catalog dependencies affected by this removal. An affected catalog with no remaining references is deleted entirely. Use [`catalog -u`](./catalog#clean-unused-entries) for a full scan of other unused entries.
 
 ::: warning Confirm the scope
 Uninstall commands modify project manifests and lockfiles. In a monorepo, carefully review the package names and dependency fields shown by the selector.

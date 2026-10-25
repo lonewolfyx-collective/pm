@@ -77,7 +77,7 @@ The command lists unreferenced catalog entries and catalogs with no references. 
 
 ## Saving and the Lockfile
 
-`move`, `rename`, `remove`, and confirmed unused-entry cleanup update the relevant `package.json` files before writing `pnpm-workspace.yaml`. They do not run an install:
+`move`, `rename`, and `remove` update changed `package.json` files before writing `pnpm-workspace.yaml`. Confirmed unused-entry cleanup updates only YAML. These operations do not run an install:
 
 ```bash
 pnpm install

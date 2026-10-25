@@ -23,6 +23,9 @@ Production output is written to `docs/.vitepress/dist`. The preview command read
 ## Content Conventions
 
 - Treat `src/commands/` and the related argument definitions as the source of truth.
+- Check `package.json#bin` and `bin/` so every public command has a documentation entry.
+- Follow the actual calls in `src/create/`, `src/init/`, `src/template.ts`, `src/run.ts`, and `src/catalog/` for template, installation, and catalog behavior.
+- When adding a command, update both locales' command pages, sidebars, home tables, quick starts, and CLI cheat sheets.
 - Keep the English and Chinese directory trees and page topics aligned.
 - Make examples directly copyable and clearly call out destructive or mutating behavior.
 - When adding a command option, update its command page and the [CLI Cheat Sheet](./cli) in both languages.
@@ -31,10 +34,12 @@ Production output is written to `docs/.vitepress/dist`. The preview command read
 
 ## Checks Before Submitting
 
+Use the pnpm version specified in `package.json#packageManager`. For documentation-only changes, check content and formatting and build the docs. Changes to TypeScript configuration or CLI code also require lint and a CLI build:
+
 ```bash
+pnpm docs:build
 pnpm lint
 pnpm build
-pnpm docs:build
 ```
 
 Commit messages and PR titles must follow the Conventional Commits rules in the repository's `AGENTS.md`. Documentation-only changes usually use `docs: <description>`.

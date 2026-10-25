@@ -77,7 +77,7 @@ catalog -u
 
 ## 保存与锁文件
 
-`move`、`rename`、`remove` 和确认后的无用项清理会先更新相关 `package.json`，再写入 `pnpm-workspace.yaml`。这些操作不会运行安装：
+`move`、`rename`、`remove` 会先更新发生变化的 `package.json`，再写入 `pnpm-workspace.yaml`；确认后的无用项清理只更新 YAML。这些操作不会运行安装：
 
 ```bash
 pnpm install

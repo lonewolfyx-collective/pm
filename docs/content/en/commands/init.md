@@ -9,6 +9,8 @@
 
 If several modes are supplied, only the highest-priority mode runs.
 
+Use [`create`](./create) to select and download a template. `init <name>` also prompts for a description, replaces template placeholders, and supports Git initialization with `--git`.
+
 ## Initialize Package Configuration
 
 ```bash
@@ -28,6 +30,8 @@ If the working directory already contains `package.json`, the current implementa
 :::
 
 This flow requires network access to fetch `.gitignore` and install dependencies.
+
+This mode invokes pnpm directly, regardless of the detected package manager, so `pnpm` must be available locally. Generated configuration uses built-in author and Git-hook conventions. Review `package.json` afterwards: it includes `prepublishOnly: pnpm build`, but no build script or build configuration is generated.
 
 ## Create a Project from a Template
 
@@ -56,6 +60,8 @@ init --monorepo
 The tool reads `pnpm-workspace.yaml#packages` and lists available workspace directories. If none exist, it can create one. A custom directory is registered as `<folder>/*` in the workspace configuration.
 
 When the package name is omitted, the prompt asks for one. The command then creates `<workspace>/<package>/package.json` with the built-in ESM library template. This mode creates only the directory and manifest; it does not generate source files or install dependencies.
+
+The manifest includes `packageManager: pnpm@12.8.1`, built-in author and repository details, and entry points at `dist/index.mjs` and `dist/index.d.mts`. Adjust the metadata and add source files and build configuration as needed. An existing target `package.json` is overwritten directly.
 
 ::: info Custom-directory restrictions
 The interactive value must be one directory name. `.`, `..`, forward slashes, and backslashes are rejected.
