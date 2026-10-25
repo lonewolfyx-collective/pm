@@ -30,6 +30,7 @@ export default defineAdditionalConfig({
           { text: 'catalog: Manage Catalogs', link: '/en/commands/catalog' },
           { text: 'run / dev / build / lint / fix: Run Scripts', link: '/en/commands/scripts' },
           { text: 'clearn: Clean Artifacts', link: '/en/commands/clearn' },
+          { text: 'create: Create from a Template', link: '/en/commands/create' },
           { text: 'init: Initialize Projects', link: '/en/commands/init' },
         ],
       },

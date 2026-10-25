@@ -37,8 +37,20 @@ With `--lockfile`, the tool also looks for lockfiles recognized for the detected
 clearn --lockfile
 ```
 
-`pnpm-workspace.yaml` is workspace configuration and is never removed as a lockfile. If the package manager cannot be detected, the command warns and preserves lockfiles while still cleaning other targets.
+`pnpm-workspace.yaml` is workspace configuration and is never removed as a lockfile. If no package manager is detected, shared configuration defaults to npm, so npm lockfile rules apply.
+
+## Clear the Working Directory
+
+```bash
+clearn --all --cwd ./temporary-project
+```
+
+`--all` clears the working directory, preserving the top-level entry named `.git`. It takes priority over default cleanup and `--lockfile`, bypassing target matching, lockfile filtering, and symbolic-link exclusions.
+
+::: danger Source files and configuration are deleted
+This mode has no confirmation prompt. It deletes source files, `package.json`, lockfiles, and `pnpm-workspace.yaml`. Use it only in a directory you intend to clear.
+:::
 
 ## Output
 
-After completion, the command prints the number of deleted targets and their paths. If no targets match, it prints `No targets found.` without failing.
+After default cleanup, the command prints the number of deleted targets and their paths. If no targets match, it prints `No targets found.` without failing. `--all` displays progress and completion messages without listing deleted targets.

@@ -67,6 +67,7 @@ export default defineAdditionalConfig({
           { text: 'catalog：管理目录', link: '/commands/catalog' },
           { text: 'run / dev / build / lint / fix：运行脚本', link: '/commands/scripts' },
           { text: 'clearn：清理产物', link: '/commands/clearn' },
+          { text: 'create：从模板创建项目', link: '/commands/create' },
           { text: 'init：初始化项目', link: '/commands/init' },
         ],
       },

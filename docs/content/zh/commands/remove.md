@@ -11,7 +11,7 @@ remove [options] <package...>
 ```bash
 remove vite
 remove eslint tsdown
-remove lodash --cwd ./apps/web
+remove lodash --cwd ./my-monorepo
 ```
 
 每个包都必须出现在某个项目的 `dependencies`、`devDependencies` 或 `optionalDependencies` 中，否则命令报错。仅存在于 `peerDependencies` 的包不是移除候选。
@@ -34,6 +34,8 @@ remove lodash --cwd ./apps/web
 - 当前根项目使用 workspace-root 参数；
 - 子项目使用 `-F <package-name>` 过滤。
 
+在 monorepo 中请从工作区根目录执行，或使用 `--cwd` 指向根目录。当前实现将工作目录解析到的清单作为根项目处理，详见[根项目与子项目](/guide/workspace#根项目与子项目)。
+
 ## Catalog 清理
 
 卸载完成后，工具检查受影响的 catalog 项：
@@ -41,10 +43,10 @@ remove lodash --cwd ./apps/web
 1. 扫描根项目与已发现的工作区项目；
 2. 将四类依赖字段和匹配的 workspace `overrides` 都视为引用；
 3. 删除已经没有引用的受影响项；
-4. 删除没有任何引用的空 catalog；
+4. 删除完全失去引用的受影响 catalog（包括其中其他条目），并清理没有引用的空命名 catalog；
 5. 如果工作区 YAML 发生变化，自动运行一次安装来同步锁文件。
 
-清理只处理本次卸载涉及的 catalog 依赖，不会顺带删除其他无用项。全面检查请运行 [`catalog -u`](./catalog#清理无用项)。
+单项清理针对本次卸载涉及的 catalog 依赖；如果受影响 catalog 完全失去引用，则会删除整个 catalog。全面检查其他无用项请运行 [`catalog -u`](./catalog#清理无用项)。
 
 ::: warning 执行前确认范围
 卸载命令会真实修改项目清单和锁文件。特别是在 monorepo 中，请认真核对交互列表里的包名和依赖字段。

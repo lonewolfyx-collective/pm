@@ -56,13 +56,21 @@ When `catalog rename` merges into an existing target, duplicate dependencies mus
 
 ## clearn Did Not Remove a Lockfile
 
-Lockfiles are removed only when `--lockfile` is present and a package manager is detected. The workspace configuration file `pnpm-workspace.yaml` is always preserved.
+Default cleanup removes the package manager's lockfiles only when `--lockfile` is present. Workspace configuration in `pnpm-workspace.yaml` is preserved because it is not a lockfile. However, `clearn --all` clears everything except the top-level `.git`, including workspace configuration and lockfiles.
+
+## How Do create and init Differ for Templates?
+
+`create` selects a template and target directory, then downloads files, using the template's default directory. `init <name>` also prompts for a description, replaces placeholders in `package.json` and `README.md`, and supports `--git`. Neither installs dependencies automatically; see the [comparison](/en/commands/create#comparison-with-init).
+
+## Why Does ni Automatically Approve Dependency Build Scripts?
+
+The current implementation detects pnpm's `Ignored build scripts:` list and automatically runs `approve-builds --all`. This applies to ordinary installs and catalog groups, and approves all pending build scripts. See [ni Build Script Approval](/en/commands/ni#pnpm-build-script-approval).
 
 ## Is init Safe in an Existing Project?
 
 Bare `init` is not safe for an existing project: when it finds `package.json`, it immediately clears everything in the working directory except `.git`.
 
-Template mode (`init <name>`) prompts for a target directory, defaulting to `<name>`. If the target directory already exists, the command clears everything in it except `.git`, without an overwrite confirmation or a check for `package.json`. Relative paths are resolved from the working directory, or the directory specified by `--cwd`; choosing `.` clears the working directory. Choose a new directory or back up the target directory first.
+Template mode (`init <name>`) prompts for a target directory, defaulting to `<name>`. If the target directory already exists, the command clears everything in it except `.git`, without an overwrite confirmation or a check for `package.json`. `create` uses the same directory cleanup behavior. Relative paths are resolved from the working directory, or the directory specified by `--cwd`; choosing `.` clears the working directory. Choose a new directory or back up the target directory first.
 
 Template mode does not install dependencies automatically. Enter the target directory after generation and install dependencies as required by the template. Pass `--git` if you also need to initialize Git.
 

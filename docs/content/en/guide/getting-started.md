@@ -20,6 +20,7 @@ build --help
 lint --help
 fix --help
 clearn --help
+create --help
 init --help
 ```
 
@@ -52,6 +53,16 @@ ni --peer vue
 
 The tool detects the package manager used by the project. In a pnpm project, for example, these calls resolve to `pnpm install` or `pnpm add`. Projects using npm, Yarn, or another supported package manager receive the corresponding command.
 
+If no package manager is detected, npm is used by default. With pnpm, `ni` automatically runs `approve-builds --all` when it detects ignored build scripts; see [Build Script Approval](/en/commands/ni#pnpm-build-script-approval).
+
+## Create a Project from a Template
+
+```bash
+create
+```
+
+Choose a template and enter a target directory to download the template. Use `init my-project --git` for a description prompt, placeholder replacement, and Git initialization. Both flows require network access and leave dependency installation to you. Existing target contents are cleared except for `.git`; see [`create`](/en/commands/create) and [`init`](/en/commands/init).
+
 ## Run Package Scripts
 
 Use `run` to select a script from `package.json#scripts`, or supply a keyword for fuzzy matching:
@@ -69,7 +80,7 @@ Every command accepts `-c, --cwd <dir>`:
 
 ```bash
 ni vite --cwd ./apps/web
-remove lodash --cwd ./packages/utils
+remove lodash --cwd ./my-monorepo
 catalog move vite --cwd ./apps/web
 run docs --cwd ./apps/web
 clearn --cwd ./apps/web

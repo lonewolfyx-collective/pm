@@ -43,6 +43,7 @@ features:
 | [`lint`](/en/commands/scripts) | Fuzzy-find and run a script whose name matches `lint` |
 | [`fix`](/en/commands/scripts) | Fuzzy-find and run a script whose name matches `fix` |
 | [`clearn`](/en/commands/clearn) | Recursively delete dependency directories, build output, and caches |
+| [`create`](/en/commands/create) | Interactively select a template and directory, then download template files |
 | [`init`](/en/commands/init) | Initialize package configuration, project templates, workspace packages, or GitHub workflows |
 
 ::: tip Command spelling

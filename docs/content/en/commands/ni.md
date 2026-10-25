@@ -18,6 +18,8 @@ ni --peer vue
 
 In a pnpm project, these calls correspond to `pnpm install`, `pnpm add`, and add operations with `-D`, `-o`, or `--save-peer`.
 
+If no package manager is detected, npm is used by default.
+
 ## Options
 
 | Option | Description |
@@ -51,6 +53,12 @@ When the entire batch belongs to one catalog, skip the interactive flow:
 ```bash
 ni --catalog-name test -D vitest @vitest/coverage-v8
 ```
+
+## pnpm Build Script Approval
+
+During pnpm install or add operations, the tool captures the package list following `Ignored build scripts:` in the output. When it detects that list, it automatically runs `approve-builds --all` with the same executable, without an additional interactive confirmation.
+
+This approves all pending dependency build scripts, including packages outside the current request. If installation fails with `ERR_PNPM_IGNORED_BUILDS` and also outputs a parseable package list, the tool still proceeds to approval. Other installation errors are propagated.
 
 ## Constraints
 

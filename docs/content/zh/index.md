@@ -38,9 +38,10 @@ features:
 | [`remove`](/commands/remove) | 从一个或多个项目移除依赖，并清理失去引用的 catalog 项 |
 | [`catalog`](/commands/catalog) | 迁移、重命名、删除或清理 pnpm catalog |
 | [`run`](/commands/scripts) | 交互选择项目脚本，支持传入关键词模糊匹配 |
-| [`dev`](/commands/scripts) | 模糊查找并运行名称包含 `dev` 的脚本 |
-| [`build`](/commands/scripts) | 模糊查找并运行名称包含 `build` 的脚本 |
-| [`lint`](/commands/scripts) | 模糊查找并运行名称包含 `lint` 的脚本 |
-| [`fix`](/commands/scripts) | 模糊查找并运行名称包含 `fix` 的脚本 |
+| [`dev`](/commands/scripts) | 模糊查找并运行名称匹配 `dev` 的脚本 |
+| [`build`](/commands/scripts) | 模糊查找并运行名称匹配 `build` 的脚本 |
+| [`lint`](/commands/scripts) | 模糊查找并运行名称匹配 `lint` 的脚本 |
+| [`fix`](/commands/scripts) | 模糊查找并运行名称匹配 `fix` 的脚本 |
 | [`clearn`](/commands/clearn) | 递归删除依赖目录、构建产物和缓存 |
+| [`create`](/commands/create) | 交互选择模板和目录，下载模板文件 |
 | [`init`](/commands/init) | 初始化包配置、项目模板、工作区包或 GitHub 工作流 |
