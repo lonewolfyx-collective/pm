@@ -38,7 +38,12 @@ runCommand('clearn', clearArgs, async (config, ctx) => {
   const cwd = resolve(config.cwd)
 
   if (ctx.args.all) {
+    const s = spinner()
+    s.start('Freeing up disk space...')
     await clearDirectory(config.cwd)
+    s.stop('Clean up!')
+
+    outro(`🎉 Done.`)
     return
   }
 
