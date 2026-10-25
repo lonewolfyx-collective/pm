@@ -8,7 +8,7 @@ export const clearArgs = {
   },
   all: {
     type: 'boolean',
-    description: 'Remove all files except for node_modules and package-lock.json',
+    description: 'Remove all files',
     default: false,
   },
 } as const satisfies ArgsDef
