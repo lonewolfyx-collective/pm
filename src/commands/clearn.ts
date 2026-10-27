@@ -10,7 +10,6 @@ import { clearDirectory } from '@/utils.ts'
 
 const ignoredDirectories = [
   'node_modules',
-  'dist',
   '.nuxt',
   '.next',
   '.output',
@@ -33,6 +32,10 @@ const ignoredDirectories = [
   'build',
   'Carthage',
 ]
+
+function isIgnoredDirectory(name: string): boolean {
+  return name.startsWith('dist') || ignoredDirectories.includes(name)
+}
 
 runCommand('clearn', clearArgs, async (config, ctx) => {
   const cwd = resolve(config.cwd)
@@ -59,7 +62,7 @@ runCommand('clearn', clearArgs, async (config, ctx) => {
   const s = spinner()
   s.start('Checking the "old stuff" in the project...')
 
-  const matches = await glob([...ignoredDirectories, ...lockFiles].map(pattern => `**/${pattern}`), {
+  const matches = await glob([...ignoredDirectories, 'dist*', ...lockFiles].map(pattern => `**/${pattern}`), {
     cwd,
     dot: true,
     nocase: false,
@@ -68,14 +71,14 @@ runCommand('clearn', clearArgs, async (config, ctx) => {
     ignore: {
       ignored: path => path.name === '.git' || path.isSymbolicLink(),
       childrenIgnored: path => path.fullpath() !== cwd && (
-        path.name === '.git' || path.isSymbolicLink() || ignoredDirectories.includes(path.name)
+        path.name === '.git' || path.isSymbolicLink() || isIgnoredDirectory(path.name)
       ),
     },
   })
 
   const targets = matches
     .filter(path => path.isDirectory()
-      ? ignoredDirectories.includes(path.name)
+      ? isIgnoredDirectory(path.name)
       : path.isFile() && (path.name === '.tern-port' || lockFiles.has(path.name)))
     .map(path => path.fullpath())
 
